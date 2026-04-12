@@ -1,0 +1,16 @@
+ktor:
+  application:
+    modules:
+      - com.martdev.ApplicationKt.module
+  deployment:
+    port: "$ADDR:3000"
+
+database:
+  address: "$DB_ADDR"
+  maxOpenConns: "$DB_MAX_OPEN_CONNS"
+  maxIdleConns: "$DB_MAX_IDLE_CONNS"
+  maxIdleTime: "$DB_MAX_IDLE_TIME"
+
+stytch:
+  stytchID: "$STYTCH_PROJECT_ID"
+  stytchSecret: "$STYTCH_SECRET"
