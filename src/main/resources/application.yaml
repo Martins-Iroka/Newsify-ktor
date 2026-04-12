@@ -14,3 +14,9 @@ database:
 stytch:
   stytchID: "$STYTCH_PROJECT_ID"
   stytchSecret: "$STYTCH_SECRET"
+
+jwt:
+  secret: "test"
+  issuer: "com.martdev"
+  audience: "newsify-users"
+  expirationMinutes: "15"
