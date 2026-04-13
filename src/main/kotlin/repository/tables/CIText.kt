@@ -1,4 +1,4 @@
-package com.martdev.domain
+package com.martdev.repository.tables
 
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.TextColumnType
