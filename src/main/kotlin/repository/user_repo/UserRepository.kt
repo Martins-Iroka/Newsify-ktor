@@ -1,0 +1,18 @@
+package com.martdev.repository.user_repo
+
+import com.martdev.domain.User
+import com.martdev.repository.DbResult
+import com.martdev.repository.tables.UserEntity
+import kotlinx.datetime.LocalDateTime
+
+interface UserRepository {
+    suspend fun activateUser(token: String): DbResult<Unit>
+    suspend fun saveUserAndVerificationToken(user: User, token: String): DbResult<Unit>
+    suspend fun saveRefreshToken(userId: Long, tokenHash: String, time: LocalDateTime): DbResult<Unit>
+    suspend fun deleteExpiredRefreshToken(): DbResult<Unit>
+    suspend fun deleteUserAndVerificationToken(userId: Long): DbResult<Unit>
+    suspend fun getUserByEmail(email: String): DbResult<UserEntity>
+    suspend fun getUserById(userId: Long): DbResult<UserEntity>
+    suspend fun getUserByRefreshToken(tokenHash: String): DbResult<UserEntity>
+    suspend fun revokeRefreshToken(tokenHash: String): DbResult<Unit>
+}

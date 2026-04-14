@@ -1,10 +1,13 @@
 package com.martdev.repository.tables
 
+import com.martdev.domain.Role
+import com.martdev.domain.User
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 import org.jetbrains.exposed.v1.dao.LongEntity
 import org.jetbrains.exposed.v1.dao.LongEntityClass
-import org.jetbrains.exposed.v1.datetime.*
+import org.jetbrains.exposed.v1.datetime.CurrentDateTime
+import org.jetbrains.exposed.v1.datetime.datetime
 
 object UsersTable : LongIdTable("users") {
     val email = citext("email").uniqueIndex()
@@ -25,3 +28,13 @@ class UserEntity(id: EntityID<Long>) : LongEntity(id) {
     var role by UsersTable.role
     var createdAt by UsersTable.createdAt
 }
+
+fun userDaoToModel(userEntity: UserEntity) = User(
+    userEntity.id.value,
+    userEntity.email,
+    userEntity.username,
+    userEntity.password,
+    userEntity.isVerified,
+    Role.valueOf(userEntity.role),
+    userEntity.createdAt
+)

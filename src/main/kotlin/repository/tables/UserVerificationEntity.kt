@@ -16,6 +16,5 @@ object UsersVerificationTable : CompositeIdTable("users_verification_tracking") 
 class UserVerificationEntity(id: EntityID<CompositeID>) : CompositeEntity(id) {
     companion object : CompositeEntityClass<UserVerificationEntity>(UsersVerificationTable)
 
-    var token by UsersVerificationTable.token
     var userId by UsersVerificationTable.userId
 }
