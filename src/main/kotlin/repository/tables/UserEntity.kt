@@ -26,15 +26,12 @@ class UserEntity(id: EntityID<Long>) : LongEntity(id) {
     var password by UsersTable.password
     var isVerified by UsersTable.isVerified
     var role by UsersTable.role
-    var createdAt by UsersTable.createdAt
 }
 
-fun userDaoToModel(userEntity: UserEntity) = User(
-    userEntity.id.value,
-    userEntity.email,
-    userEntity.username,
-    userEntity.password,
-    userEntity.isVerified,
-    Role.valueOf(userEntity.role),
-    userEntity.createdAt
+fun UserEntity.toUserModel() = User(
+    id.value,
+    email,
+    username,
+    password,
+    Role.valueOf(role)
 )

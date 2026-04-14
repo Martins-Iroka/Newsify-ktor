@@ -8,6 +8,7 @@ import com.martdev.plugins.configureHTTP
 import com.martdev.plugins.configureRouting
 import com.martdev.plugins.configureSecurity
 import com.martdev.plugins.configureSerialization
+import com.martdev.plugins.configureStatusPage
 import io.ktor.server.application.*
 
 fun main(args: Array<String>) {
@@ -39,6 +40,7 @@ fun Application.module() {
     configureSerialization()
     configureDatabases()
     configureRouting()
+    configureStatusPage()
 }
 
 private fun ApplicationEnvironment.getEnvValue(key: String) = config.property(key).getString()

@@ -40,6 +40,9 @@ dependencies {
     implementation("io.ktor:ktor-server-config-yaml")
     implementation("com.stytch.java:sdk:6.0.0")
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposed_version")
+    implementation("at.favre.lib:bcrypt:0.10.2")
+    implementation("io.ktor:ktor-server-status-pages")
+    implementation("io.ktor:ktor-server-host-common:3.4.2")
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }
