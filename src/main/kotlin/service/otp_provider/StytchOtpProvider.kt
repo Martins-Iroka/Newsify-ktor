@@ -5,7 +5,9 @@ import com.stytch.java.common.StytchResult
 import com.stytch.java.consumer.StytchClient
 import com.stytch.java.consumer.models.otp.AuthenticateRequest
 import com.stytch.java.consumer.models.otpemail.SendRequest
+import org.koin.core.annotation.Single
 
+@Single
 class StytchOtpProvider(
     stytchConfig: StytchConfig
 ) : OtpProvider {

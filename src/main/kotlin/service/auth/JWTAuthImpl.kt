@@ -3,10 +3,11 @@ package com.martdev.service.auth
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.martdev.config.AuthConfig
-import com.martdev.config.Configuration
-import java.util.Date
+import org.koin.core.annotation.Single
+import java.util.*
 import kotlin.time.Duration.Companion.minutes
 
+@Single
 class JWTAuthImpl(
     private val configuration: AuthConfig
 ) : JWTAuth {

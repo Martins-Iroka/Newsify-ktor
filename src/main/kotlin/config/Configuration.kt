@@ -1,8 +1,5 @@
 package com.martdev.config
 
-import java.util.Date
-
-
 data class Configuration(
     val databaseConfig: DatabaseConfig = DatabaseConfig(),
     val authConfig: AuthConfig = AuthConfig(),

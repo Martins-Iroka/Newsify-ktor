@@ -7,12 +7,14 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
-fun Route.userRoutes(userService: UserService) {
+fun Route.userRoutes() {
+    val us by inject<UserService>()
     route("/authentication") {
         post(path = "/register") {
             val userRequest = call.receive<UserRequest>()
-            val userResponse = userService.registerUser(userRequest)
+            val userResponse = us.registerUser(userRequest)
             val dataResponse = DataResponse(userResponse)
             call.respond(HttpStatusCode.Created, dataResponse)
 

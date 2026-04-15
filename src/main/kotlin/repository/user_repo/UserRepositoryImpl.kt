@@ -12,7 +12,9 @@ import org.jetbrains.exposed.v1.core.dao.id.CompositeID
 import org.jetbrains.exposed.v1.datetime.CurrentDateTime
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.select
+import org.koin.core.annotation.Single
 
+@Single
 class UserRepositoryImpl : UserRepository {
     override suspend fun activateUser(token: String): DbResult<Unit> {
         return withTransaction {
