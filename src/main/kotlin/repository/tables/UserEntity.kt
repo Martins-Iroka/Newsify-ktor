@@ -14,7 +14,7 @@ object UsersTable : LongIdTable("users") {
     val username = varchar("username", 255).uniqueIndex()
     val password = text("password")
     val isVerified = bool("is_verified").default(false)
-    val role = text("role")
+    val role = text("role").default("reader")
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 }
 

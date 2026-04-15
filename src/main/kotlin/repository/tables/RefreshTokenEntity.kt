@@ -13,7 +13,7 @@ object RefreshTokensTable : LongIdTable("refresh_tokens") {
         onDelete = ReferenceOption.CASCADE)
         .index("idx_refresh_tokens_user_id")
     val tokenHash = text("token_hash").uniqueIndex().index("idx_refresh_tokens_token_hash")
-    val expiryTime = datetime("expiry_at")
+    val expiryTime = datetime("expires_at")
     val revoked = bool("revoked").default(false)
 }
 

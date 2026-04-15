@@ -3,11 +3,23 @@ val h2_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
 val postgres_version: String by project
+val flyway_version: String by project
+val koin_version: String by project
+val koin_annotation_version: String by project
 
 plugins {
     kotlin("jvm") version "2.3.0"
     id("io.ktor.plugin") version "3.4.2"
+    id("com.google.devtools.ksp") version "2.3.6"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.3.0"
+    id("org.flywaydb.flyway") version "10.15.0"
+}
+
+flyway {
+    url = "jdbc:postgresql://localhost:5432/newsify"
+    user = "your_user"
+    password = "your_password"
+    locations = arrayOf("filesystem:src/main/resources/db/migration")
 }
 
 group = "com.martdev"
@@ -43,6 +55,12 @@ dependencies {
     implementation("at.favre.lib:bcrypt:0.10.2")
     implementation("io.ktor:ktor-server-status-pages")
     implementation("io.ktor:ktor-server-host-common:3.4.2")
+    implementation("org.flywaydb:flyway-core:$flyway_version")
+    implementation("org.flywaydb:flyway-database-postgresql:$flyway_version")
+    implementation("io.insert-koin:koin-ktor:${koin_version}")
+    implementation("io.insert-koin:koin-logger-slf4j:${koin_version}")
+    implementation("io.insert-koin:koin-annotations:$koin_annotation_version")
+    ksp("io.insert-koin:koin-ksp-compiler:$koin_annotation_version")
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }
