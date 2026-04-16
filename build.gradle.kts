@@ -60,6 +60,7 @@ dependencies {
     implementation("io.insert-koin:koin-ktor:${koin_version}")
     implementation("io.insert-koin:koin-logger-slf4j:${koin_version}")
     implementation("io.insert-koin:koin-annotations:$koin_annotation_version")
+    implementation("com.zaxxer:HikariCP:4.0.3")
     ksp("io.insert-koin:koin-ksp-compiler:$koin_annotation_version")
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")

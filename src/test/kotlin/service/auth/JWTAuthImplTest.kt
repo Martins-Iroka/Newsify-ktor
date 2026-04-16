@@ -1,8 +1,6 @@
 package com.martdev.service.auth
 
 import com.martdev.config.AuthConfig
-import com.martdev.config.Configuration
-import com.martdev.config.DatabaseConfig
 import org.junit.Assert.*
 import org.junit.Test
 
