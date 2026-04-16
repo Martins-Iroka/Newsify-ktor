@@ -3,11 +3,11 @@ package com.martdev.plugins
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.martdev.config.AuthConfig
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.response.respond
+import io.ktor.server.response.*
 import org.koin.ktor.ext.inject
 
 fun Application.configureSecurity() {

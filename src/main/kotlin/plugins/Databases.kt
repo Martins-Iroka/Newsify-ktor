@@ -16,8 +16,7 @@ fun Application.configureDatabase() {
             dBConfig.address,
             dBConfig.user,
             dBConfig.password
-        ).load()
-
+        ).baselineOnMigrate(true).load()
     val m = flyway.migrate()
     log.info("migration was successful - ${m.success}")
 

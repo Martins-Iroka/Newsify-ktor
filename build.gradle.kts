@@ -23,6 +23,14 @@ plugins {
     locations = arrayOf("filesystem:src/main/resources/db/migration")
 }*/
 
+ktor {
+    openApi {
+        enabled = true
+        codeInferenceEnabled = true
+        onlyCommented = false
+    }
+}
+
 group = "com.martdev"
 version = "0.0.1"
 
@@ -62,6 +70,7 @@ dependencies {
     implementation("io.insert-koin:koin-logger-slf4j:${koin_version}")
     implementation("io.insert-koin:koin-annotations:$koin_annotation_version")
     implementation("com.zaxxer:HikariCP:4.0.3")
+    implementation("io.github.cdimascio:dotenv-kotlin:6.5.1")
     testImplementation("org.testcontainers:testcontainers:$test_container_version")
     testImplementation("org.testcontainers:testcontainers-postgresql:$test_container_version")
     ksp("io.insert-koin:koin-ksp-compiler:$koin_annotation_version")

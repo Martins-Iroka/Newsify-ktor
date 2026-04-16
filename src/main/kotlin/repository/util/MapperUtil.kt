@@ -4,6 +4,7 @@ import com.martdev.repository.DbError
 import com.martdev.repository.DbResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.v1.core.StdOutSqlLogger
 import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
 import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
 import org.jetbrains.exposed.v1.jdbc.transactions.inTopLevelSuspendTransaction
@@ -11,6 +12,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.inTopLevelSuspendTransaction
 suspend fun <T> withTransaction(block: suspend JdbcTransaction.() -> DbResult<T>): DbResult<T> =
     withContext(Dispatchers.IO) {
         inTopLevelSuspendTransaction {
+            addLogger(StdOutSqlLogger)
             try {
                 block()
             } catch (e: ExposedSQLException) {

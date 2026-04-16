@@ -12,6 +12,18 @@ import org.koin.ktor.ext.inject
 fun Route.userRoutes() {
     val us by inject<UserService>()
     route("/authentication") {
+        /**
+         * Tag: authentication
+         *
+         * Registers a user
+         *
+         * Path: registers
+         *
+         * Responses:
+         *   - 201 [com.martdev.dto.response.UserResponse] The user was registered successfully.
+         *   - 400 [com.martdev.dto.ErrorResponse] bad request.
+         *   - 500 [com.martdev.dto.ErrorResponse] internal server error.
+         */
         post(path = "/register") {
             val userRequest = call.receive<UserRequest>()
             val userResponse = us.registerUser(userRequest)
