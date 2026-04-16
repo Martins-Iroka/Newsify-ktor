@@ -18,8 +18,8 @@ import org.koin.core.annotation.Single
 class UserRepositoryImpl : UserRepository {
     override suspend fun activateUser(token: String): DbResult<Unit> {
         return withTransaction {
-            val query = getUserByVerificationToken(token)
-            val userId = query?.get(UsersTable.id) ?: return@withTransaction DbResult.Failure(DbError.NotFound())
+            val resultRow = getUserByVerificationToken(token)
+            val userId = resultRow?.get(UsersTable.id) ?: return@withTransaction DbResult.Failure(DbError.NotFound())
 
             updateUser(userId.value) ?: return@withTransaction DbResult.Failure(DbError.NotFound())
 
@@ -100,7 +100,7 @@ class UserRepositoryImpl : UserRepository {
         }
     }
 
-    override suspend fun getUserByRefreshToken(tokenHash: String): DbResult<User> {
+    override suspend fun getUserByRefreshToken(tokenHash: String): DbResult<Long> {
         return withTransaction {
             val row = UsersTable.join(
                 otherTable = RefreshTokensTable,
@@ -108,14 +108,17 @@ class UserRepositoryImpl : UserRepository {
                 onColumn = UsersTable.id,
                 otherColumn = RefreshTokensTable.userId
             ).select(UsersTable.id).where {
-                RefreshTokensTable.tokenHash eq tokenHash and RefreshTokensTable.expiryTime.greater(CurrentDateTime) and RefreshTokensTable.revoked.eq(
+                (RefreshTokensTable.tokenHash eq tokenHash) and
+                        (RefreshTokensTable.expiryTime.greater(
+                    CurrentDateTime
+                )) and (RefreshTokensTable.revoked.eq(
                     false
-                )
+                ))
             }.firstOrNull() ?: return@withTransaction DbResult.Failure(DbError.NotFound())
 
-            val entity = UserEntity.wrapRow(row)
+            val userId = row[UsersTable.id].value
 
-            DbResult.Success(entity.toUserModel())
+            DbResult.Success(userId)
         }
     }
 
@@ -150,7 +153,7 @@ class UserRepositoryImpl : UserRepository {
         email = user.email
         username = user.username
         password = user.password
-        role = user.role.name.lowercase()
+        role = user.role.name
     }
 
     private fun createUserVerificationToken(tokenParam: String, uid: Long) {
