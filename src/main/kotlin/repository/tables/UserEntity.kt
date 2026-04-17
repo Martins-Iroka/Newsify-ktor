@@ -33,5 +33,6 @@ fun UserEntity.toUserModel() = User(
     email,
     username,
     password,
+    isVerified = isVerified,
     Role.valueOf(role)
 )

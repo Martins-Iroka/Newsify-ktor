@@ -15,7 +15,7 @@ class JWTAuthImplTest {
             audience = "audience"
         )
         val jwtAuth = JWTAuthImpl(authConfig)
-        val token = jwtAuth.generateToken("userID")
+        val token = jwtAuth.generateAccessToken("userID")
         assertTrue(token.isNotEmpty())
     }
 }

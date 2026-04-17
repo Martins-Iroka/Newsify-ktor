@@ -8,5 +8,6 @@ data class User(
     val email: String = "",
     val username: String = "",
     val password: String = "",
+    val isVerified: Boolean = false,
     val role: Role = Role.READER,
 )
