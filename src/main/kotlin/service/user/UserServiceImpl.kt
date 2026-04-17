@@ -6,12 +6,15 @@ import com.martdev.domain.exceptions.BadRequestException
 import com.martdev.domain.exceptions.InternalServerException
 import com.martdev.domain.exceptions.NotFoundException
 import com.martdev.dto.request.UserRequest
+import com.martdev.dto.request.VerifyUserRequest
 import com.martdev.dto.response.UserResponse
+import com.martdev.dto.response.VerifyUserResponse
 import com.martdev.repository.DbError
 import com.martdev.repository.DbResult
 import com.martdev.repository.user_repo.UserRepository
 import com.martdev.service.otp_provider.OtpProvider
 import com.martdev.util.PasswordHasher
+import org.jetbrains.exposed.v1.core.exposedLogger
 import org.koin.core.annotation.Single
 import java.util.*
 import kotlin.enums.enumEntries
@@ -41,7 +44,7 @@ class UserServiceImpl(
             }
             is DbResult.Success -> {
                 val userModel = result.value
-                //You have to modify this
+                //todo you have to modify this
                 val (emailId, error) = otpProvider.sendVerificationCode(userModel.email)
                 if (error.isNotEmpty()) {
                     repository.deleteUserAndVerificationToken(userModel.id)
@@ -53,20 +56,45 @@ class UserServiceImpl(
             }
         }
     }
-}
 
-private fun validateUserRequest(user: UserRequest) {
-    // Removed the extra space from the regex character set
-    val emailPattern = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+[a-zA-Z]{2,}$")
+    override suspend fun verifyUser(request: VerifyUserRequest): VerifyUserResponse {
+        validateVerificationRequest(request)
 
-    // Check if the provided role is a valid member of the Role enum
-    val isValidRole = enumEntries<Role>().any { it.name == user.role.uppercase() }
+        val (isSuccess, errorMessage) = otpProvider.verifyCode(request.emailId, request.code)
+        if (!isSuccess) {
+            exposedLogger.error(errorMessage)
+            throw InternalServerException("failed to send OTP")
+        }
+        return when (val result = repository.activateUser(request.token)) {
+            is DbResult.Failure -> when (result.error) {
+                is DbError.NotFound -> throw NotFoundException("Invalid or expired verification token")
+                else -> throw InternalServerException("An error occurred during verification")
+            }
+            is DbResult.Success -> VerifyUserResponse("verified")
+        }
+    }
 
-    when {
-        !emailPattern.matches(user.email) -> throw BadRequestException("Invalid email format")
-        user.password.length < 8 -> throw BadRequestException("Password must be at least 8 characters long")
-        user.username.isBlank() -> throw BadRequestException("Username cannot be empty")
-        !isValidRole ->
-            throw BadRequestException("Invalid role specified. Must be one of: ${enumEntries<Role>().joinToString { it.name }}")
+    private fun validateUserRequest(user: UserRequest) {
+        // Removed the extra space from the regex character set
+        val emailPattern = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+[a-zA-Z]{2,}$")
+
+        // Check if the provided role is a valid member of the Role enum
+        val isValidRole = enumEntries<Role>().any { it.name == user.role.uppercase() }
+
+        when {
+            !emailPattern.matches(user.email) -> throw BadRequestException("Invalid email format")
+            user.password.length < 8 -> throw BadRequestException("Password must be at least 8 characters long")
+            user.username.isBlank() -> throw BadRequestException("Username cannot be empty")
+            !isValidRole ->
+                throw BadRequestException("Invalid role specified. Must be one of: ${enumEntries<Role>().joinToString { it.name }}")
+        }
+    }
+
+    private fun validateVerificationRequest(request: VerifyUserRequest) {
+        when {
+            request.code.isEmpty() || request.code.length != 6 -> throw BadRequestException("code is not valid")
+            request.emailId.isEmpty() -> throw BadRequestException("email id is needed")
+            request.token.isEmpty() -> throw BadRequestException("token is needed")
+        }
     }
 }
