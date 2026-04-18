@@ -100,7 +100,7 @@ class UserRepositoryImpl : UserRepository {
         }
     }
 
-    override suspend fun getUserByRefreshToken(tokenHash: String): DbResult<Long> {
+    override suspend fun getUserIdByRefreshToken(tokenHash: String): DbResult<Long> {
         return withTransaction {
             val row = UsersTable.join(
                 otherTable = RefreshTokensTable,

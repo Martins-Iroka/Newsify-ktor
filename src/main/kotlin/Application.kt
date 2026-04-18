@@ -62,6 +62,7 @@ fun Application.module() {
     configureDatabase()
     configureRouting()
     configureStatusPage()
+    configureBackgroundJobs()
 }
 
 private fun ApplicationEnvironment.getEnvValue(key: String) = config.property(key).getString()

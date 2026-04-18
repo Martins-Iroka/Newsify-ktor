@@ -5,10 +5,13 @@ import com.martdev.domain.User
 import com.martdev.domain.exceptions.BadRequestException
 import com.martdev.domain.exceptions.InternalServerException
 import com.martdev.domain.exceptions.NotFoundException
+import com.martdev.domain.exceptions.UnauthorizedException
 import com.martdev.dto.request.LoginUserRequest
+import com.martdev.dto.request.RefreshTokenRequest
 import com.martdev.dto.request.UserRequest
 import com.martdev.dto.request.VerifyUserRequest
 import com.martdev.dto.response.LoginUserResponse
+import com.martdev.dto.response.RefreshTokenResponse
 import com.martdev.dto.response.UserResponse
 import com.martdev.dto.response.VerifyUserResponse
 import com.martdev.repository.DbError
@@ -102,8 +105,7 @@ class UserServiceImpl(
 
                 val accessToken = auth.generateAccessToken(user.id.toString())
                 val refreshToken = auth.generateRefreshToken()
-                val hash = MessageDigest.getInstance("SHA-256").digest(refreshToken.toByteArray())
-                val refreshTokenInHex = HexFormat.of().formatHex(hash)
+                val refreshTokenInHex = generateHexValueFromToken(refreshToken)
                 val refreshExpiry = Clock.System.now().plus(24.hours).toLocalDateTime(TimeZone.UTC)
 
                 when(val savedResult = repository.saveRefreshToken(user.id,refreshTokenInHex, refreshExpiry)) {
@@ -114,6 +116,30 @@ class UserServiceImpl(
                 }
             }
         }
+    }
+
+    override suspend fun refreshToken(request: RefreshTokenRequest): RefreshTokenResponse {
+        if (request.refreshToken.isEmpty()) throw BadRequestException("invalid refresh token")
+        val tokenInHex = generateHexValueFromToken(request.refreshToken)
+        return when (val result = repository.getUserIdByRefreshToken(tokenInHex)) {
+            is DbResult.Failure -> when (result.error) {
+                is DbError.NotFound -> throw UnauthorizedException()
+                else -> throw InternalServerException()
+            }
+            is DbResult.Success -> {
+                repository.revokeRefreshToken(tokenInHex)
+                val newAccessToken = auth.generateAccessToken(result.value.toString())
+                val newRefreshToken = auth.generateRefreshToken()
+                val newRefreshTokenInHex = generateHexValueFromToken(newRefreshToken)
+                val refreshExpiry = Clock.System.now().plus(24.hours).toLocalDateTime(TimeZone.UTC)
+                repository.saveRefreshToken(userId = result.value, newRefreshTokenInHex, refreshExpiry)
+                RefreshTokenResponse(newAccessToken, newRefreshToken)
+            }
+        }
+    }
+
+    override suspend fun deleteExpiredRefreshToken() {
+        repository.deleteExpiredRefreshToken()
     }
 
     private val emailPattern = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+[a-zA-Z]{2,}$")
@@ -139,7 +165,6 @@ class UserServiceImpl(
     }
 
     private fun validateLoginUserRequest(request: LoginUserRequest) {
-
         when {
             request.email.isEmpty()
                     || request.email.length > 255
@@ -147,5 +172,10 @@ class UserServiceImpl(
                     || request.password.isEmpty()
                     || request.password.length < 8 -> throw BadRequestException("Invalid email or password")
         }
+    }
+
+    private fun generateHexValueFromToken(token: String): String {
+        val hashedToken = MessageDigest.getInstance("SHA-256").digest(token.toByteArray())
+        return HexFormat.of().formatHex(hashedToken)
     }
 }

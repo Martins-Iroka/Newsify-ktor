@@ -12,6 +12,6 @@ interface UserRepository {
     suspend fun deleteUserAndVerificationToken(userId: Long): DbResult<Unit>
     suspend fun getUserByEmail(email: String): DbResult<User>
     suspend fun getUserById(userId: Long): DbResult<User>
-    suspend fun getUserByRefreshToken(tokenHash: String): DbResult<Long>
+    suspend fun getUserIdByRefreshToken(tokenHash: String): DbResult<Long>
     suspend fun revokeRefreshToken(tokenHash: String): DbResult<Unit>
 }

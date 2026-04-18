@@ -126,7 +126,7 @@ class UserRepositoryImplTest {
         )
         assertIs<DbResult.Success<Unit>>(refreshTokenResult)
 
-        val userResult2 = repository.getUserByRefreshToken(tokenHash)
+        val userResult2 = repository.getUserIdByRefreshToken(tokenHash)
         assertTrue(userResult2 is DbResult.Success, userResult2.toString())
         assertEquals(userResult.value.id, userResult2.value)
     }
@@ -149,7 +149,7 @@ class UserRepositoryImplTest {
         val deletedResult = repository.deleteExpiredRefreshToken()
         assertTrue(deletedResult is DbResult.Success)
 
-        val result = repository.getUserByRefreshToken(tokenHash)
+        val result = repository.getUserIdByRefreshToken(tokenHash)
         assertTrue(result is DbResult.Failure)
         assertTrue(result.error is DbError.NotFound)
     }
@@ -172,7 +172,7 @@ class UserRepositoryImplTest {
         val revokedResult = repository.revokeRefreshToken(tokenHash)
         assertTrue(revokedResult is DbResult.Success)
 
-        val result = repository.getUserByRefreshToken(tokenHash)
+        val result = repository.getUserIdByRefreshToken(tokenHash)
         assertTrue(result is DbResult.Failure)
         assertTrue(result.error is DbError.NotFound)
     }
