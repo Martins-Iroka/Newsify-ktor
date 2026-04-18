@@ -71,6 +71,7 @@ dependencies {
     implementation("io.insert-koin:koin-annotations:$koin_annotation_version")
     implementation("com.zaxxer:HikariCP:4.0.3")
     implementation("io.github.cdimascio:dotenv-kotlin:6.5.1")
+    implementation("io.ktor:ktor-server-rate-limit")
     testImplementation("org.testcontainers:testcontainers:$test_container_version")
     testImplementation("org.testcontainers:testcontainers-postgresql:$test_container_version")
     ksp("io.insert-koin:koin-ksp-compiler:$koin_annotation_version")

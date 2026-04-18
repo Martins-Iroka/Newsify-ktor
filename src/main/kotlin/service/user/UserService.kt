@@ -1,13 +1,7 @@
 package com.martdev.service.user
 
-import com.martdev.dto.request.LoginUserRequest
-import com.martdev.dto.request.RefreshTokenRequest
-import com.martdev.dto.request.UserRequest
-import com.martdev.dto.request.VerifyUserRequest
-import com.martdev.dto.response.LoginUserResponse
-import com.martdev.dto.response.RefreshTokenResponse
-import com.martdev.dto.response.UserResponse
-import com.martdev.dto.response.VerifyUserResponse
+import com.martdev.dto.request.*
+import com.martdev.dto.response.*
 
 interface UserService {
     suspend fun registerUser(user: UserRequest): UserResponse
@@ -15,4 +9,5 @@ interface UserService {
     suspend fun loginUser(request: LoginUserRequest): LoginUserResponse
     suspend fun refreshToken(request: RefreshTokenRequest): RefreshTokenResponse
     suspend fun deleteExpiredRefreshToken()
+    suspend fun resendOTP(request: ResendOTPRequest): ResendOTPResponse
 }

@@ -36,5 +36,9 @@ fun Application.configureStatusPage() {
             val errorResponse = ErrorResponse("Internal server error")
             call.respond(status = HttpStatusCode.InternalServerError, errorResponse)
         }
+
+        status(HttpStatusCode.TooManyRequests) { call, status ->
+            call.respond(status)
+        }
     }
 }

@@ -6,14 +6,8 @@ import com.martdev.domain.exceptions.BadRequestException
 import com.martdev.domain.exceptions.InternalServerException
 import com.martdev.domain.exceptions.NotFoundException
 import com.martdev.domain.exceptions.UnauthorizedException
-import com.martdev.dto.request.LoginUserRequest
-import com.martdev.dto.request.RefreshTokenRequest
-import com.martdev.dto.request.UserRequest
-import com.martdev.dto.request.VerifyUserRequest
-import com.martdev.dto.response.LoginUserResponse
-import com.martdev.dto.response.RefreshTokenResponse
-import com.martdev.dto.response.UserResponse
-import com.martdev.dto.response.VerifyUserResponse
+import com.martdev.dto.request.*
+import com.martdev.dto.response.*
 import com.martdev.repository.DbError
 import com.martdev.repository.DbResult
 import com.martdev.repository.user_repo.UserRepository
@@ -75,7 +69,7 @@ class UserServiceImpl(
         val (isSuccess, errorMessage) = otpProvider.verifyCode(request.emailId, request.code)
         if (!isSuccess) {
             exposedLogger.error(errorMessage)
-            throw InternalServerException("failed to send OTP")
+            throw InternalServerException("invalid or expired OTP")
         }
         return when (val result = repository.activateUser(request.token)) {
             is DbResult.Failure -> when (result.error) {
@@ -140,6 +134,31 @@ class UserServiceImpl(
 
     override suspend fun deleteExpiredRefreshToken() {
         repository.deleteExpiredRefreshToken()
+    }
+
+    override suspend fun resendOTP(request: ResendOTPRequest): ResendOTPResponse {
+        if (request.email.isEmpty() || !emailPattern.matches(request.email)) throw BadRequestException("invalid email")
+
+        return when(val userResult = repository.getUserByEmail(request.email)) {
+            is DbResult.Failure -> {
+                /*if (userResult.error is DbError.NotFound) {
+                    throw NotFoundException()
+                } else throw InternalServerException()*/
+                ResendOTPResponse("n/a", "n/a")
+            }
+            is DbResult.Success -> {
+                val user = userResult.value
+                if (user.isVerified) throw BadRequestException("User is already verified.")
+
+                val (emailId, error) = otpProvider.sendVerificationCode(user.email)
+                if (error.isNotEmpty()) throw InternalServerException("failed to resend OTP")
+
+                val token = UUID.randomUUID().toString()
+                repository.deleteAndCreateVerificationToken(token, user.id)
+
+                ResendOTPResponse(emailId, token)
+            }
+        }
     }
 
     private val emailPattern = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+[a-zA-Z]{2,}$")

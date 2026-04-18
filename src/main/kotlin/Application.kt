@@ -14,6 +14,7 @@ import org.koin.logger.slf4jLogger
 //todo: implement the rest of the db calls in UserServiceImpl
 //todo: test to ensure all works well
 //todo: implement the endpoints for users auth flow
+//todo: add rate limit to the resend otp
 //todo: test endpoints to ensure all works well
 fun main(args: Array<String>) {
     dotenv {
@@ -63,6 +64,7 @@ fun Application.module() {
     configureRouting()
     configureStatusPage()
     configureBackgroundJobs()
+    configureRateLimiter()
 }
 
 private fun ApplicationEnvironment.getEnvValue(key: String) = config.property(key).getString()

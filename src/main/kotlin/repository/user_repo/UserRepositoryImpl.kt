@@ -132,6 +132,14 @@ class UserRepositoryImpl : UserRepository {
         }
     }
 
+    override suspend fun deleteAndCreateVerificationToken(token: String, userId: Long): DbResult<Unit> {
+        return withTransaction {
+            deleteUserVerificationToken(userId)
+            createUserVerificationToken(token, userId)
+            DbResult.Success(Unit)
+        }
+    }
+
     private fun getUserByVerificationToken(token: String) = UsersTable.join(
         otherTable = UsersVerificationTable,
         joinType = JoinType.INNER,
