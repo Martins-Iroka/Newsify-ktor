@@ -11,10 +11,9 @@ import org.koin.ksp.generated.com_martdev_AppModule
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 
-//todo: implement the rest of the db calls in UserServiceImpl
-//todo: test to ensure all works well
+//todo: write test for user service impl
 //todo: implement the endpoints for users auth flow
-//todo: add rate limit to the resend otp
+//todo: add rate limit to the resend otp api request
 //todo: test endpoints to ensure all works well
 fun main(args: Array<String>) {
     dotenv {

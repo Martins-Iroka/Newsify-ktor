@@ -72,9 +72,10 @@ dependencies {
     implementation("com.zaxxer:HikariCP:4.0.3")
     implementation("io.github.cdimascio:dotenv-kotlin:6.5.1")
     implementation("io.ktor:ktor-server-rate-limit")
+    ksp("io.insert-koin:koin-ksp-compiler:$koin_annotation_version")
     testImplementation("org.testcontainers:testcontainers:$test_container_version")
     testImplementation("org.testcontainers:testcontainers-postgresql:$test_container_version")
-    ksp("io.insert-koin:koin-ksp-compiler:$koin_annotation_version")
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    testImplementation("io.mockk:mockk:1.14.9")
 }
