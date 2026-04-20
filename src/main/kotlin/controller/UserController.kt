@@ -1,16 +1,17 @@
 package com.martdev.controller
 
 import com.martdev.dto.DataResponse
-import com.martdev.dto.request.UserRequest
+import com.martdev.dto.request.*
 import com.martdev.service.user.UserService
 import io.ktor.http.*
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Route.userRoutes() {
-    val us by inject<UserService>()
+    val service by inject<UserService>()
     route("/authentication") {
         /**
          * Tag: authentication
@@ -26,10 +27,90 @@ fun Route.userRoutes() {
          */
         post(path = "/register") {
             val userRequest = call.receive<UserRequest>()
-            val userResponse = us.registerUser(userRequest)
+            val userResponse = service.registerUser(userRequest)
             val dataResponse = DataResponse(userResponse)
             call.respond(HttpStatusCode.Created, dataResponse)
+        }
 
+        /**
+         * Tag: authentication
+         *
+         * Verifies a user
+         *
+         * Path: verify
+         *
+         * Responses:
+         *   - 200 [com.martdev.dto.response.UserVerificationResponse] The user was verified successfully.
+         *   - 400 [com.martdev.dto.ErrorResponse] bad request.
+         *   - 404 [com.martdev.dto.ErrorResponse] not found
+         *   - 500 [com.martdev.dto.ErrorResponse] internal server error.
+         */
+        post("/verify") {
+            val request = call.receive<UserVerificationRequest>()
+            val response = service.verifyUser(request)
+            val dataResponse = DataResponse(response)
+            call.respond(HttpStatusCode.OK, dataResponse)
+        }
+
+        /**
+         * Tag: authentication
+         *
+         * Login a user
+         *
+         * Path: login
+         *
+         * Responses:
+         *   - 200 [com.martdev.dto.response.LoginUserResponse] successful login.
+         *   - 400 [com.martdev.dto.ErrorResponse] bad request.
+         *   - 401 [com.martdev.dto.ErrorResponse] unauthorized
+         *   - 404 [com.martdev.dto.ErrorResponse] not found
+         *   - 500 [com.martdev.dto.ErrorResponse] internal server error.
+         */
+        post("/login") {
+            val request = call.receive<LoginUserRequest>()
+            val response = service.loginUser(request)
+            val dataResponse = DataResponse(response)
+            call.respond(HttpStatusCode.OK, dataResponse)
+        }
+
+        /**
+         * Tag: authentication
+         *
+         * Refresh access token
+         *
+         * Path: refresh-token
+         *
+         * Responses:
+         *   - 200 [com.martdev.dto.response.RefreshTokenResponse] token refreshed.
+         *   - 401 [com.martdev.dto.ErrorResponse] unauthorized.
+         *   - 500 [com.martdev.dto.ErrorResponse] internal server error.
+         */
+        post("/refresh-token") {
+            val request = call.receive<RefreshTokenRequest>()
+            val response = service.refreshToken(request)
+            val dataResponse = DataResponse(response)
+            call.respond(HttpStatusCode.OK, dataResponse)
+        }
+
+        /**
+         * Tag: authentication
+         *
+         * Resend verification code
+         *
+         * Path: resend-otp
+         *
+         * Responses:
+         *   - 200 [com.martdev.dto.response.ResendOTPResponse] OTP sent.
+         *   - 400 [com.martdev.dto.ErrorResponse] bad request.
+         *   - 500 [com.martdev.dto.ErrorResponse] internal server error.
+         */
+        rateLimit(RateLimitName("resend-otp")) {
+            post("/resend-otp") {
+                val request = call.receive<ResendOTPRequest>()
+                val response = service.resendOTP(request)
+                val dataResponse = DataResponse(response)
+                call.respond(HttpStatusCode.OK, dataResponse)
+            }
         }
     }
 }

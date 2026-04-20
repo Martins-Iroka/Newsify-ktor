@@ -11,8 +11,6 @@ import org.koin.ksp.generated.com_martdev_AppModule
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 
-//todo: implement the endpoints for users auth flow
-//todo: add rate limit to the resend otp api request
 //todo: test endpoints to ensure all works well
 fun main(args: Array<String>) {
     dotenv {
@@ -59,10 +57,10 @@ fun Application.module() {
     configureSecurity()
     configureSerialization()
     configureDatabase()
+    configureRateLimiter()
     configureRouting()
     configureStatusPage()
     configureBackgroundJobs()
-    configureRateLimiter()
 }
 
 private fun ApplicationEnvironment.getEnvValue(key: String) = config.property(key).getString()

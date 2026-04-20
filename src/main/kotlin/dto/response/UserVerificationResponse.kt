@@ -3,6 +3,6 @@ package com.martdev.dto.response
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class VerifyUserResponse(
+data class UserVerificationResponse(
     val status: String
 )

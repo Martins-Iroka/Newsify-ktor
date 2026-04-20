@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class VerifyUserRequest(
+data class UserVerificationRequest(
     val code: String,
     @SerialName("email_id")
     val emailId: String,

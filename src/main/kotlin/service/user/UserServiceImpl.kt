@@ -62,7 +62,7 @@ class UserServiceImpl(
         }
     }
 
-    override suspend fun verifyUser(request: VerifyUserRequest): VerifyUserResponse {
+    override suspend fun verifyUser(request: UserVerificationRequest): UserVerificationResponse {
         validateVerificationRequest(request)
 
         val (isSuccess, errorMessage) = otpProvider.verifyCode(request.emailId, request.code)
@@ -75,7 +75,7 @@ class UserServiceImpl(
                 is DbError.NotFound -> throw NotFoundException("invalid or expired verification token")
                 else -> throw InternalServerException("an error occurred during verification")
             }
-            is DbResult.Success -> VerifyUserResponse("verified")
+            is DbResult.Success -> UserVerificationResponse("verified")
         }
     }
 
@@ -177,7 +177,7 @@ class UserServiceImpl(
         }
     }
 
-    private fun validateVerificationRequest(request: VerifyUserRequest) {
+    private fun validateVerificationRequest(request: UserVerificationRequest) {
         when {
             request.code.isEmpty() || request.code.length != 6 -> throw BadRequestException("code is not valid")
             request.emailId.isEmpty() -> throw BadRequestException("email id is needed")

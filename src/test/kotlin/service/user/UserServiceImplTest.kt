@@ -157,7 +157,7 @@ class UserServiceImplTest {
         assertEquals("failed to send OTP", internalServerException.error)
     }
 
-    private val request = VerifyUserRequest(
+    private val request = UserVerificationRequest(
         "123456",
         "emailId",
         token = "token"
@@ -191,7 +191,7 @@ class UserServiceImplTest {
     @Test
     fun `should throw bad request exception for invalid verification request`() = runTest {
 
-        val request = VerifyUserRequest(
+        val request = UserVerificationRequest(
             "1234",
             "emailId",
             "token"
@@ -203,7 +203,7 @@ class UserServiceImplTest {
 
         assertEquals("code is not valid", invalidCodeException.error)
 
-        val request2 = VerifyUserRequest(
+        val request2 = UserVerificationRequest(
             "123456",
             "",
             "token"
@@ -215,7 +215,7 @@ class UserServiceImplTest {
 
         assertEquals("email id is needed", invalidEmailIdException.error)
 
-        val request3 = VerifyUserRequest(
+        val request3 = UserVerificationRequest(
             "123456",
             "emailId",
             ""
