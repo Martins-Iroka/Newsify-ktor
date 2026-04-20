@@ -44,16 +44,15 @@ class UserServiceImpl(
 
         return when (val result = repository.saveUserAndVerificationToken(userModel, token)) {
             is DbResult.Failure -> when(result.error) {
-                is DbError.ConnectionError, is DbError.UnknownError, DbError.ForeignKeyViolation  -> throw InternalServerException()
-                is DbError.NotFound -> throw NotFoundException()
                 DbError.UniqueViolation -> throw BadRequestException("duplicate email or username")
+                else -> throw InternalServerException()
             }
             is DbResult.Success -> {
                 val userModel = result.value
                 //todo you have to modify this
                 val (emailId, error) = otpProvider.sendVerificationCode(userModel.email)
                 if (error.isNotEmpty()) {
-                    repository.deleteUserAndVerificationToken(userModel.id)
+//                    repository.deleteUserAndVerificationToken(userModel.id)
                     throw InternalServerException("failed to send OTP")
                 }
                 UserResponse(
@@ -73,8 +72,8 @@ class UserServiceImpl(
         }
         return when (val result = repository.activateUser(request.token)) {
             is DbResult.Failure -> when (result.error) {
-                is DbError.NotFound -> throw NotFoundException("Invalid or expired verification token")
-                else -> throw InternalServerException("An error occurred during verification")
+                is DbError.NotFound -> throw NotFoundException("invalid or expired verification token")
+                else -> throw InternalServerException("an error occurred during verification")
             }
             is DbResult.Success -> VerifyUserResponse("verified")
         }
@@ -86,16 +85,16 @@ class UserServiceImpl(
         return when (val result = repository.getUserByEmail(request.email)) {
             is DbResult.Failure -> {
                 if (result.error is DbError.NotFound) {
-                    throw BadRequestException("Invalid email or password")
+                    throw BadRequestException("invalid email or password")
                 } else throw InternalServerException()
             }
 
             is DbResult.Success -> {
                 val user = result.value
                 val isValid = PasswordHasher.verify(request.password, user.password)
-                if (!isValid) throw BadRequestException("Invalid email or password")
+                if (!isValid) throw BadRequestException("invalid email or password")
 
-                if (!user.isVerified) throw BadRequestException("Please verify your email before logging in")
+                if (!user.isVerified) throw UnauthorizedException("please verify your email before logging in")
 
                 val accessToken = auth.generateAccessToken(user.id.toString())
                 val refreshToken = auth.generateRefreshToken()
@@ -113,8 +112,11 @@ class UserServiceImpl(
     }
 
     override suspend fun refreshToken(request: RefreshTokenRequest): RefreshTokenResponse {
+
         if (request.refreshToken.isEmpty()) throw BadRequestException("invalid refresh token")
+
         val tokenInHex = generateHexValueFromToken(request.refreshToken)
+
         return when (val result = repository.getUserIdByRefreshToken(tokenInHex)) {
             is DbResult.Failure -> when (result.error) {
                 is DbError.NotFound -> throw UnauthorizedException()
@@ -148,7 +150,7 @@ class UserServiceImpl(
             }
             is DbResult.Success -> {
                 val user = userResult.value
-                if (user.isVerified) throw BadRequestException("User is already verified.")
+                if (user.isVerified) throw BadRequestException("user is already verified")
 
                 val (emailId, error) = otpProvider.sendVerificationCode(user.email)
                 if (error.isNotEmpty()) throw InternalServerException("failed to resend OTP")
@@ -167,9 +169,9 @@ class UserServiceImpl(
         val isValidRole = enumEntries<Role>().any { it.name == user.role.uppercase() }
 
         when {
-            user.email.isEmpty() || !emailPattern.matches(user.email) -> throw BadRequestException("Invalid email format")
-            user.password.length < 8 -> throw BadRequestException("Password must be at least 8 characters long")
-            user.username.isBlank() -> throw BadRequestException("Username cannot be empty")
+            user.email.isEmpty() || !emailPattern.matches(user.email) -> throw BadRequestException("invalid email format")
+            user.password.length < 8 -> throw BadRequestException("password must be at least 8 characters long")
+            user.username.isBlank() -> throw BadRequestException("username cannot be empty")
             !isValidRole ->
                 throw BadRequestException("Invalid role specified. Must be one of: ${enumEntries<Role>().joinToString { it.name }}")
         }
@@ -189,7 +191,7 @@ class UserServiceImpl(
                     || request.email.length > 255
                     || !emailPattern.matches(request.email)
                     || request.password.isEmpty()
-                    || request.password.length < 8 -> throw BadRequestException("Invalid email or password")
+                    || request.password.length < 8 -> throw BadRequestException("invalid email or password")
         }
     }
 
