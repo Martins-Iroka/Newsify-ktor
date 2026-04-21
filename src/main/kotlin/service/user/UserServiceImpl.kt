@@ -38,7 +38,7 @@ class UserServiceImpl(
             username = user.username,
             email = user.email,
             password = hashedPassword,
-            role = Role.valueOf(user.role)
+            role = Role.valueOf(user.role.uppercase())
         )
         val token = UUID.randomUUID().toString()
 
@@ -52,7 +52,7 @@ class UserServiceImpl(
                 //todo you have to modify this
                 val (emailId, error) = otpProvider.sendVerificationCode(userModel.email)
                 if (error.isNotEmpty()) {
-//                    repository.deleteUserAndVerificationToken(userModel.id)
+                    repository.deleteUserAndVerificationToken(userModel.id)
                     throw InternalServerException("failed to send OTP")
                 }
                 UserResponse(

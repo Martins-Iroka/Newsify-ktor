@@ -4,7 +4,7 @@ import com.martdev.config.StytchConfig
 import com.stytch.java.common.StytchResult
 import com.stytch.java.consumer.StytchClient
 import com.stytch.java.consumer.models.otp.AuthenticateRequest
-import com.stytch.java.consumer.models.otpemail.SendRequest
+import com.stytch.java.consumer.models.otpemail.LoginOrCreateRequest
 import io.ktor.http.*
 import org.koin.core.annotation.Single
 
@@ -18,8 +18,8 @@ class StytchOtpProvider(
         stytchConfig.secret
     )
     override suspend fun sendVerificationCode(email: String): Pair<String, String> {
-        val result = client.otps.email.send(
-            SendRequest(email)
+        val result = client.otps.email.loginOrCreate(
+            LoginOrCreateRequest(email)
         )
         return when(result) {
             is StytchResult.Error -> Pair("", result.exception.message?: "Error")

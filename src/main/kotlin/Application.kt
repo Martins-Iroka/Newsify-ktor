@@ -53,6 +53,7 @@ fun Application.module() {
         }
         modules(com_martdev_AppModule, configModule)
     }
+    configureCallLogging()
     configureHTTP()
     configureSecurity()
     configureSerialization()

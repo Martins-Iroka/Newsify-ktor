@@ -18,8 +18,6 @@ fun Route.userRoutes() {
          *
          * Registers a user
          *
-         * Path: registers
-         *
          * Responses:
          *   - 201 [com.martdev.dto.response.UserResponse] The user was registered successfully.
          *   - 400 [com.martdev.dto.ErrorResponse] bad request.
@@ -37,8 +35,6 @@ fun Route.userRoutes() {
          *
          * Verifies a user
          *
-         * Path: verify-user
-         *
          * Responses:
          *   - 200 [com.martdev.dto.response.UserVerificationResponse] The user was verified successfully.
          *   - 400 [com.martdev.dto.ErrorResponse] bad request.
@@ -55,8 +51,6 @@ fun Route.userRoutes() {
          * Tag: authentication
          *
          * Login a user
-         *
-         * Path: login
          *
          * Responses:
          *   - 200 [com.martdev.dto.response.UserLoginResponse] successful login.
@@ -77,8 +71,6 @@ fun Route.userRoutes() {
          *
          * Refresh access token
          *
-         * Path: refresh-token
-         *
          * Responses:
          *   - 200 [com.martdev.dto.response.RefreshTokenResponse] token refreshed.
          *   - 401 [com.martdev.dto.ErrorResponse] unauthorized.
@@ -95,8 +87,6 @@ fun Route.userRoutes() {
          * Tag: authentication
          *
          * Resend verification code
-         *
-         * Path: resend-otp
          *
          * Responses:
          *   - 200 [com.martdev.dto.response.ResendOTPResponse] OTP sent.
