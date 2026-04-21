@@ -277,7 +277,7 @@ class UserServiceImplTest {
         assertEquals("an error occurred during verification", exception.error)
     }
 
-    private val loginRequest = LoginUserRequest(
+    private val loginRequest = UserLoginRequest(
         email = "test@gmail.com",
         password = "12345678"
     )
@@ -329,7 +329,7 @@ class UserServiceImplTest {
 
     @Test
     fun `should throw bad request exception for invalid login request`() = runTest {
-        val request = LoginUserRequest(
+        val request = UserLoginRequest(
             email = "",
             password = "123456"
         )

@@ -79,7 +79,7 @@ class UserServiceImpl(
         }
     }
 
-    override suspend fun loginUser(request: LoginUserRequest): LoginUserResponse {
+    override suspend fun loginUser(request: UserLoginRequest): UserLoginResponse {
         validateLoginUserRequest(request)
 
         return when (val result = repository.getUserByEmail(request.email)) {
@@ -105,7 +105,7 @@ class UserServiceImpl(
                     is DbResult.Failure -> {
                         if (savedResult.error is DbError.NotFound) throw NotFoundException() else throw InternalServerException()
                     }
-                    is DbResult.Success -> LoginUserResponse(accessToken, refreshToken, user.id)
+                    is DbResult.Success -> UserLoginResponse(accessToken, refreshToken, user.id)
                 }
             }
         }
@@ -185,7 +185,7 @@ class UserServiceImpl(
         }
     }
 
-    private fun validateLoginUserRequest(request: LoginUserRequest) {
+    private fun validateLoginUserRequest(request: UserLoginRequest) {
         when {
             request.email.isEmpty()
                     || request.email.length > 255

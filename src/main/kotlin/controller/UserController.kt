@@ -37,15 +37,14 @@ fun Route.userRoutes() {
          *
          * Verifies a user
          *
-         * Path: verify
+         * Path: verify-user
          *
          * Responses:
          *   - 200 [com.martdev.dto.response.UserVerificationResponse] The user was verified successfully.
          *   - 400 [com.martdev.dto.ErrorResponse] bad request.
-         *   - 404 [com.martdev.dto.ErrorResponse] not found
          *   - 500 [com.martdev.dto.ErrorResponse] internal server error.
          */
-        post("/verify") {
+        post("/verify-user") {
             val request = call.receive<UserVerificationRequest>()
             val response = service.verifyUser(request)
             val dataResponse = DataResponse(response)
@@ -60,14 +59,14 @@ fun Route.userRoutes() {
          * Path: login
          *
          * Responses:
-         *   - 200 [com.martdev.dto.response.LoginUserResponse] successful login.
+         *   - 200 [com.martdev.dto.response.UserLoginResponse] successful login.
          *   - 400 [com.martdev.dto.ErrorResponse] bad request.
          *   - 401 [com.martdev.dto.ErrorResponse] unauthorized
          *   - 404 [com.martdev.dto.ErrorResponse] not found
          *   - 500 [com.martdev.dto.ErrorResponse] internal server error.
          */
         post("/login") {
-            val request = call.receive<LoginUserRequest>()
+            val request = call.receive<UserLoginRequest>()
             val response = service.loginUser(request)
             val dataResponse = DataResponse(response)
             call.respond(HttpStatusCode.OK, dataResponse)
@@ -102,6 +101,7 @@ fun Route.userRoutes() {
          * Responses:
          *   - 200 [com.martdev.dto.response.ResendOTPResponse] OTP sent.
          *   - 400 [com.martdev.dto.ErrorResponse] bad request.
+         *   - 429 [com.martdev.dto.ErrorResponse] too many requests.
          *   - 500 [com.martdev.dto.ErrorResponse] internal server error.
          */
         rateLimit(RateLimitName("resend-otp")) {

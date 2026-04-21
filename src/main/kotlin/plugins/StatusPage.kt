@@ -33,12 +33,13 @@ fun Application.configureStatusPage() {
         }
 
         exception<Exception> { call, cause ->
-            val errorResponse = ErrorResponse("Internal server error")
+            val errorResponse = ErrorResponse(cause.message ?: "Internal server error")
             call.respond(status = HttpStatusCode.InternalServerError, errorResponse)
         }
 
         status(HttpStatusCode.TooManyRequests) { call, status ->
-            call.respond(status)
+            val errorResponse = ErrorResponse("too many request")
+            call.respond(status = status, errorResponse)
         }
     }
 }

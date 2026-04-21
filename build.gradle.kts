@@ -76,6 +76,9 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers:$test_container_version")
     testImplementation("org.testcontainers:testcontainers-postgresql:$test_container_version")
     testImplementation("io.ktor:ktor-server-test-host")
+    testImplementation("io.ktor:ktor-client-content-negotiation")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("io.mockk:mockk:1.14.9")
+    testImplementation("io.insert-koin:koin-test:${koin_version}")
+    testImplementation("io.insert-koin:koin-test-junit4:${koin_version}")
 }
