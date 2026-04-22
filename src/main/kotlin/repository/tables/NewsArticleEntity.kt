@@ -1,5 +1,6 @@
 package com.martdev.repository.tables
 
+import com.martdev.domain.NewsArticleData
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 import org.jetbrains.exposed.v1.dao.LongEntity
@@ -22,3 +23,11 @@ class NewsArticleEntity(id: EntityID<Long>) : LongEntity(id) {
     var creatorId by NewsArticlesTable.creatorId
     var createdAt by NewsArticlesTable.createdAt
 }
+
+fun NewsArticleEntity.toNewsArticleData() = NewsArticleData(
+    id = id.value,
+    title,
+    content,
+    creatorId,
+    createdAt = createdAt
+)

@@ -11,7 +11,11 @@ import org.koin.ksp.generated.com_martdev_AppModule
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 
-//todo: test endpoints to ensure all works well
+//todo: test creator repo
+//todo: create creator service
+//todo: test creator service
+//todo: write creator endpoint
+//todo: test creator endpoint
 fun main(args: Array<String>) {
     dotenv {
         systemProperties = true

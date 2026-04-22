@@ -4,6 +4,7 @@ import com.martdev.domain.Role
 import com.martdev.domain.User
 import com.martdev.repository.DbError
 import com.martdev.repository.DbResult
+import com.martdev.repository.postgres
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -12,7 +13,6 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.testcontainers.postgresql.PostgreSQLContainer
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
@@ -21,12 +21,6 @@ import kotlin.time.Duration.Companion.minutes
 
 
 class UserRepositoryImplTest {
-
-    val postgres: PostgreSQLContainer = PostgreSQLContainer("postgres:16-alpine").apply {
-        withDatabaseName("newsify_test")
-        withUsername("test")
-        withPassword("test")
-    }
 
     private lateinit var repository: UserRepository
 
