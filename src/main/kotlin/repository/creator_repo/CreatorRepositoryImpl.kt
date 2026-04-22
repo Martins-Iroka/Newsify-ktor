@@ -5,7 +5,6 @@ import com.martdev.repository.DbError
 import com.martdev.repository.DbResult
 import com.martdev.repository.tables.NewsArticleEntity
 import com.martdev.repository.tables.NewsArticlesTable
-import com.martdev.repository.tables.toNewsArticleData
 import com.martdev.repository.util.withTransaction
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
@@ -16,14 +15,14 @@ import org.koin.core.annotation.Single
 
 @Single
 class CreatorRepositoryImpl : CreatorRepository {
-    override suspend fun saveNewsArticle(articleData: NewsArticleData): DbResult<Unit> {
+    override suspend fun saveNewsArticle(articleData: NewsArticleData): DbResult<Long> {
         return withTransaction {
-            NewsArticleEntity.new {
+            val id = NewsArticleEntity.new {
                 title = articleData.title
                 content = articleData.content
                 creatorId = articleData.creatorId
-            }
-            DbResult.Success(Unit)
+            }.id.value
+            DbResult.Success(id)
         }
     }
 
@@ -42,9 +41,15 @@ class CreatorRepositoryImpl : CreatorRepository {
                 }.orderBy(NewsArticlesTable.createdAt, order = SortOrder.DESC).firstOrNull() ?: return@withTransaction DbResult.Failure(
                 DbError.NotFound())
 
-            val entity = NewsArticleEntity.wrapRow(rowQuery)
-
-            DbResult.Success(entity.toNewsArticleData())
+            val title = rowQuery[NewsArticlesTable.title]
+            val content = rowQuery[NewsArticlesTable.content]
+            val date = rowQuery[NewsArticlesTable.createdAt]
+            val data = NewsArticleData(
+                title = title,
+                content = content,
+                createdAt = date
+            )
+            DbResult.Success(data)
         }
     }
 
@@ -59,12 +64,12 @@ class CreatorRepositoryImpl : CreatorRepository {
                     NewsArticlesTable.title
                 ).where(NewsArticlesTable.creatorId eq creatorId)
                 .orderBy(NewsArticlesTable.createdAt, SortOrder.DESC)
-                .limit(limit).offset(offset).map {
-                    NewsArticleEntity.wrapRow(it)
-                }
+                .limit(limit).offset(offset)
 
             val newsArticleDataList = entities.map {
-                it.toNewsArticleData()
+                val id = it[NewsArticlesTable.id].value
+                val title = it[NewsArticlesTable.title]
+                NewsArticleData(id = id, title = title)
             }
             DbResult.Success(newsArticleDataList)
         }
@@ -84,17 +89,23 @@ class CreatorRepositoryImpl : CreatorRepository {
         }
     }
 
-    override suspend fun updateNewsArticle(newsArticleData: NewsArticleData): DbResult<Unit> {
+    override suspend fun updateNewsArticle(newsArticleData: NewsArticleData): DbResult<NewsArticleData> {
         return withTransaction {
 
-            NewsArticleEntity.findByIdAndUpdate(
+            val entity = NewsArticleEntity.findByIdAndUpdate(
                 newsArticleData.id
             ) {
                 it.title = newsArticleData.title
                 it.content = newsArticleData.content
             } ?: return@withTransaction DbResult.Failure(DbError.NotFound())
 
-            DbResult.Success(Unit)
+            DbResult.Success(
+                NewsArticleData(
+                    id = entity.id.value,
+                    title = entity.title,
+                    content = entity.content
+
+            ))
         }
     }
 }

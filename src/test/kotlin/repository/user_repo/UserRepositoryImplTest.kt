@@ -4,12 +4,11 @@ import com.martdev.domain.Role
 import com.martdev.domain.User
 import com.martdev.repository.DbError
 import com.martdev.repository.DbResult
+import com.martdev.repository.connectAndMigrate
 import com.martdev.repository.postgres
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import org.flywaydb.core.Flyway
-import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -43,20 +42,6 @@ class UserRepositoryImplTest {
         postgres.stop()
     }
 
-    private fun connectAndMigrate(): Database {
-        val flyway = Flyway.configure()
-            .dataSource(postgres.jdbcUrl, postgres.username, postgres.password)
-            .load()
-
-        flyway.migrate()
-
-        return Database.connect(
-            url = postgres.jdbcUrl,
-            driver = "org.postgresql.Driver",
-            user = postgres.username,
-            password = postgres.password
-        )
-    }
 
     @Test
     fun `should save user and verification token then retrieve user by email`() = runTest {

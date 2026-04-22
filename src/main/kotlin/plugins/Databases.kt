@@ -17,8 +17,8 @@ fun Application.configureDatabase() {
             dBConfig.user,
             dBConfig.password
         ).baselineOnMigrate(true).load()
-    val m = flyway.migrate()
-    log.info("migration was successful - ${m.success}")
+
+    flyway.migrate()
 
     val config = HikariConfig().apply {
         jdbcUrl = dBConfig.address
