@@ -4,7 +4,7 @@ import com.martdev.plugins.*
 import io.github.cdimascio.dotenv.dotenv
 import io.ktor.server.application.*
 
-//todo: write creator endpoint
+//todo: implement jwt for each creator endpoint
 //todo: test creator endpoint
 fun main(args: Array<String>) {
     dotenv {
