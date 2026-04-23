@@ -147,4 +147,14 @@ class CreatorRepositoryImplTest {
         assertNotEquals(data.title, updatedNewsData.title)
         assertNotEquals(data.content, updatedNewsData.content)
     }
+
+    @Test
+    fun `should return unique violation for duplicate news article title`() = runTest {
+        val successResult = repository.saveNewsArticle(data)
+        assertTrue(successResult is DbResult.Success)
+
+        val failedResult = repository.saveNewsArticle(data)
+        assertTrue(failedResult is DbResult.Failure)
+        assertTrue(failedResult.error is DbError.UniqueViolation, failedResult.toString())
+    }
 }

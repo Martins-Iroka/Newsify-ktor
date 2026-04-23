@@ -61,7 +61,8 @@ class CreatorRepositoryImpl : CreatorRepository {
         return withTransaction {
             val entities = NewsArticlesTable
                 .select(NewsArticlesTable.id,
-                    NewsArticlesTable.title
+                    NewsArticlesTable.title,
+                    NewsArticlesTable.createdAt
                 ).where(NewsArticlesTable.creatorId eq creatorId)
                 .orderBy(NewsArticlesTable.createdAt, SortOrder.DESC)
                 .limit(limit).offset(offset)
@@ -69,7 +70,8 @@ class CreatorRepositoryImpl : CreatorRepository {
             val newsArticleDataList = entities.map {
                 val id = it[NewsArticlesTable.id].value
                 val title = it[NewsArticlesTable.title]
-                NewsArticleData(id = id, title = title)
+                val createdAt = it[NewsArticlesTable.createdAt]
+                NewsArticleData(id = id, title = title, createdAt = createdAt)
             }
             DbResult.Success(newsArticleDataList)
         }
