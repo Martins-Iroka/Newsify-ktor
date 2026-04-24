@@ -4,7 +4,7 @@ import com.martdev.domain.NewsArticleData
 import com.martdev.domain.exceptions.BadRequestException
 import com.martdev.domain.exceptions.InternalServerException
 import com.martdev.domain.exceptions.NotFoundException
-import com.martdev.dto.response.NewsArticleDataDto
+import com.martdev.dto.request.CreateNewsArticleRequest
 import com.martdev.repository.DbError
 import com.martdev.repository.DbResult
 import com.martdev.repository.creator_repo.CreatorRepository
@@ -47,11 +47,13 @@ class CreatorServiceImplTest {
         content = "content",
         creatorId = 12
     )
-    private val dataDto = NewsArticleDataDto(
+    private val request = CreateNewsArticleRequest(
         title = "title",
         content = "content",
-        creatorId = 12
     )
+
+    private val creatorId = 1L
+    private val articleId = 11L
 
     @Test
     fun `should save news article returns id`() = runTest {
@@ -63,42 +65,33 @@ class CreatorServiceImplTest {
             val requestCaptured = requestSlot.captured
             assertEquals(data.title, requestCaptured.title)
             assertEquals(data.content, requestCaptured.content)
-            assertEquals(data.creatorId, requestCaptured.creatorId)
+            assertEquals(creatorId, requestCaptured.creatorId)
             DbResult.Success(1)
         }
 
-        val resultId = service.saveNewsArticle(dataDto)
+        val resultId = service.saveNewsArticle(creatorId, request)
         assertEquals(1, resultId)
     }
 
     @Test
     fun `should throw bad request exception for invalid news article data`() = runTest {
-        val dataWithInvalidTitle = dataDto.copy(
+        val dataWithInvalidTitle = request.copy(
             title = ""
         )
 
         val badRequestExceptionForEmptyTitle = assertFailsWith<BadRequestException> {
-            service.saveNewsArticle(dataWithInvalidTitle)
+            service.saveNewsArticle(creatorId, dataWithInvalidTitle)
         }
         assertEquals("title is required", badRequestExceptionForEmptyTitle.error)
 
-        val dataWithInvalidContent = dataDto.copy(
+        val dataWithInvalidContent = request.copy(
             content = ""
         )
 
         val badRequestExceptionForEmptyContent = assertFailsWith<BadRequestException> {
-            service.saveNewsArticle(dataWithInvalidContent)
+            service.saveNewsArticle(creatorId, dataWithInvalidContent)
         }
         assertEquals("content is required", badRequestExceptionForEmptyContent.error)
-
-        val dataWithInvalidCreatorId = dataDto.copy(
-            creatorId = 0
-        )
-
-        val badRequestExceptionForEmptyCreatorId = assertFailsWith<BadRequestException> {
-            service.saveNewsArticle(dataWithInvalidCreatorId)
-        }
-        assertEquals("creator id is required", badRequestExceptionForEmptyCreatorId.error)
     }
 
     @Test
@@ -110,7 +103,7 @@ class CreatorServiceImplTest {
         )
 
         val exception = assertFailsWith<BadRequestException> {
-            service.saveNewsArticle(dataDto)
+            service.saveNewsArticle(creatorId, request)
         }
 
         assertEquals("duplicate title", exception.error)
@@ -125,12 +118,9 @@ class CreatorServiceImplTest {
         )
 
         assertFailsWith<InternalServerException> {
-            service.saveNewsArticle(dataDto)
+            service.saveNewsArticle(creatorId, request)
         }
     }
-
-    private val creatorId = 1L
-    private val articleId = 11L
 
     @Test
     fun `should get news article by id successfully`() = runTest {
@@ -255,7 +245,7 @@ class CreatorServiceImplTest {
 
     @Test
     fun `should update news article then returns new update`() = runTest {
-        val newUpdate = dataDto.copy(title = "title2", content = "content2")
+        val newUpdate = request.copy(title = "title2", content = "content2")
 
         coEvery {
             repository.updateNewsArticle(any())
@@ -266,7 +256,7 @@ class CreatorServiceImplTest {
             )
         )
 
-        val response = service.updateNewsArticle(newUpdate)
+        val response = service.updateNewsArticle(creatorId, newUpdate)
 
         assertEquals(newUpdate.title, response.title)
         assertEquals(newUpdate.content, response.content)
@@ -274,32 +264,23 @@ class CreatorServiceImplTest {
 
     @Test
     fun `should throw bad request exception for update news article containing invalid data`() = runTest {
-        val dataWithInvalidTitle = dataDto.copy(
+        val dataWithInvalidTitle = request.copy(
             title = ""
         )
 
         val badRequestExceptionForEmptyTitle = assertFailsWith<BadRequestException> {
-            service.updateNewsArticle(dataWithInvalidTitle)
+            service.updateNewsArticle(creatorId, dataWithInvalidTitle)
         }
         assertEquals("title is required", badRequestExceptionForEmptyTitle.error)
 
-        val dataWithInvalidContent = dataDto.copy(
+        val dataWithInvalidContent = request.copy(
             content = ""
         )
 
         val badRequestExceptionForEmptyContent = assertFailsWith<BadRequestException> {
-            service.updateNewsArticle(dataWithInvalidContent)
+            service.updateNewsArticle(creatorId, dataWithInvalidContent)
         }
         assertEquals("content is required", badRequestExceptionForEmptyContent.error)
-
-        val dataWithInvalidCreatorId = dataDto.copy(
-            creatorId = 0
-        )
-
-        val badRequestExceptionForEmptyCreatorId = assertFailsWith<BadRequestException> {
-            service.updateNewsArticle(dataWithInvalidCreatorId)
-        }
-        assertEquals("creator id is required", badRequestExceptionForEmptyCreatorId.error)
     }
 
     @Test
@@ -309,7 +290,7 @@ class CreatorServiceImplTest {
         } returns DbResult.Failure(DbError.NotFound())
 
         assertFailsWith<NotFoundException> {
-            service.updateNewsArticle(dataDto)
+            service.updateNewsArticle(creatorId, request)
         }
     }
 
@@ -320,7 +301,7 @@ class CreatorServiceImplTest {
         } returns DbResult.Failure(DbError.ConnectionError("error"))
 
         assertFailsWith<InternalServerException> {
-            service.updateNewsArticle(dataDto)
+            service.updateNewsArticle(creatorId, request)
         }
     }
 }

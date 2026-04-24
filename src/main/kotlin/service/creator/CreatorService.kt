@@ -1,11 +1,12 @@
 package com.martdev.service.creator
 
-import com.martdev.dto.response.NewsArticleDataDto
+import com.martdev.dto.request.CreateNewsArticleRequest
+import com.martdev.dto.response.NewsArticleResponse
 
 interface CreatorService {
-    suspend fun saveNewsArticle(data: NewsArticleDataDto): Long
-    suspend fun getNewsArticleById(creatorId: Long, articleId: Long): NewsArticleDataDto
-    suspend fun getAllNewsArticleByCreatorId(creatorId: Long, limit: Int, offset: Long): List<NewsArticleDataDto>
+    suspend fun saveNewsArticle(creatorId: Long, data: CreateNewsArticleRequest): Long
+    suspend fun getNewsArticleById(creatorId: Long, articleId: Long): NewsArticleResponse
+    suspend fun getAllNewsArticleByCreatorId(creatorId: Long, limit: Int, offset: Long): List<NewsArticleResponse>
     suspend fun deleteNewsArticle(creatorId: Long, articleId: Long)
-    suspend fun updateNewsArticle(newsArticleDataDto: NewsArticleDataDto): NewsArticleDataDto
+    suspend fun updateNewsArticle(creatorId: Long, newsArticleDataDto: CreateNewsArticleRequest): NewsArticleResponse
 }

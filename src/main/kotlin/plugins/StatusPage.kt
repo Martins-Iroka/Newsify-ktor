@@ -9,6 +9,7 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
+import kotlinx.serialization.SerializationException
 
 fun Application.configureStatusPage() {
     install(StatusPages) {
@@ -32,7 +33,18 @@ fun Application.configureStatusPage() {
             call.respond(status = HttpStatusCode.Unauthorized, errorResponse)
         }
 
+        exception<SerializationException> { call, cause ->
+            val errorResponse = ErrorResponse("Invalid request body format")
+            call.respond(status = HttpStatusCode.BadRequest, errorResponse)
+        }
+
+        exception<io.ktor.server.plugins.BadRequestException> { call, cause ->
+            val errorResponse = ErrorResponse(cause.message ?: "Bad Request")
+            call.respond(status = HttpStatusCode.BadRequest, errorResponse)
+        }
+
         exception<Exception> { call, cause ->
+            cause.printStackTrace()
             val errorResponse = ErrorResponse(cause.message ?: "Internal server error")
             call.respond(status = HttpStatusCode.InternalServerError, errorResponse)
         }

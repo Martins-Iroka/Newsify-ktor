@@ -4,12 +4,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class NewsArticleDataDto(
+data class NewsArticleResponse(
     val id: Long = 0,
     val title: String = "",
     val content: String = "",
-    @SerialName("creator_id")
-    val creatorId: Long = 0,
     @SerialName("created_at")
     val createdAt: String = ""
 )
