@@ -30,7 +30,8 @@ fun Route.creatorRoutes() {
              */
             post("/create-news") {
                 val creatorId = getJWTClaims() ?: return@post call.respond(
-                    HttpStatusCode.Unauthorized, ErrorResponse("invalid creatorId passed"))
+                    HttpStatusCode.Unauthorized, ErrorResponse("invalid creatorId passed")
+                )
                 val newsArticleRequest = call.receive<CreateNewsArticleRequest>()
                 val articleId = service.saveNewsArticle(creatorId, newsArticleRequest)
                 val dataResponse = DataResponse(
@@ -43,8 +44,6 @@ fun Route.creatorRoutes() {
              * Tag: creator
              *
              * Get news article by creator id and articleId
-             *
-             * Path: creatorId [Long]
              *
              * Path: articleId [Long]
              *
@@ -65,10 +64,6 @@ fun Route.creatorRoutes() {
              * Tag: creator
              *
              * Get all news article by creator id
-             *
-             * Query: limit [Int]
-             *
-             * Query: offset [Int]
              *
              * Responses:
              *   - 200 [kotlin.collections.List<com.martdev.dto.response.NewsArticleDataDto>] A list of news articles.
@@ -121,17 +116,20 @@ fun Route.creatorRoutes() {
              *
              * Update news article by creator id and articleId
              *
+             * Path: articleId [Long]
+             *
              * Responses:
              *   - 200 [com.martdev.dto.response.NewsArticleResponse] news article info updated.
              *   - 404 [com.martdev.dto.ErrorResponse] not found.
              *   - 500 [com.martdev.dto.ErrorResponse] internal server error.
              */
-            patch("/updateNewsArticle") {
-                val creatorId = getJWTClaims() ?: return@patch call.respond(HttpStatusCode.Unauthorized, ErrorResponse("unauthorized"))
-                val request = call.receive<CreateNewsArticleRequest>()
-                val response = service.updateNewsArticle(creatorId, request)
-                val dataResponse = DataResponse(response)
-                call.respond(HttpStatusCode.OK, dataResponse)
+            patch("/updateNewsArticle/{articleId}") {
+                verifyPaths { creatorId, articleId ->
+                    val request = call.receive<CreateNewsArticleRequest>()
+                    val response = service.updateNewsArticle(creatorId, articleId,request)
+                    val dataResponse = DataResponse(response)
+                    call.respond(HttpStatusCode.OK, dataResponse)
+                }
             }
         }
     }
@@ -149,7 +147,7 @@ private suspend inline fun RoutingContext.verifyPaths(block: (Long, Long) -> Uni
     }
     if (articleId == null) {
         val errorResponse = ErrorResponse(
-            "invalid articleId. Both must be numbers"
+            "invalid articleId"
         )
         call.respond(HttpStatusCode.BadRequest, errorResponse)
         return

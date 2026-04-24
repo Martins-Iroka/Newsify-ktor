@@ -84,10 +84,12 @@ class CreatorServiceImpl(
 
     override suspend fun updateNewsArticle(
         creatorId: Long,
+        articleId: Long,
         newsArticleDataDto: CreateNewsArticleRequest
     ): NewsArticleResponse {
         validateNewsArticleData(newsArticleDataDto)
         val data = NewsArticleData(
+            id = articleId,
             title = newsArticleDataDto.title,
             content = newsArticleDataDto.content
         )

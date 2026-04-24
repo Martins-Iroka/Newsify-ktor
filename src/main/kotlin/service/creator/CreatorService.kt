@@ -8,5 +8,5 @@ interface CreatorService {
     suspend fun getNewsArticleById(creatorId: Long, articleId: Long): NewsArticleResponse
     suspend fun getAllNewsArticleByCreatorId(creatorId: Long, limit: Int, offset: Long): List<NewsArticleResponse>
     suspend fun deleteNewsArticle(creatorId: Long, articleId: Long)
-    suspend fun updateNewsArticle(creatorId: Long, newsArticleDataDto: CreateNewsArticleRequest): NewsArticleResponse
+    suspend fun updateNewsArticle(creatorId: Long, articleId: Long, newsArticleDataDto: CreateNewsArticleRequest): NewsArticleResponse
 }

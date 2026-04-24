@@ -2,11 +2,11 @@ package com.martdev.plugins
 
 import com.martdev.domain.exceptions.BadRequestException
 import com.martdev.domain.exceptions.InternalServerException
+import com.martdev.domain.exceptions.NotFoundException
 import com.martdev.domain.exceptions.UnauthorizedException
 import com.martdev.dto.ErrorResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.plugins.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import kotlinx.serialization.SerializationException
@@ -19,6 +19,11 @@ fun Application.configureStatusPage() {
         }
 
         exception<NotFoundException> { call, cause ->
+            val errorResponse = ErrorResponse(cause.message ?: "Not found")
+            call.respond(status = HttpStatusCode.NotFound, errorResponse)
+        }
+
+        exception<io.ktor.server.plugins.NotFoundException> { call, cause ->
             val errorResponse = ErrorResponse(cause.message ?: "Not found")
             call.respond(status = HttpStatusCode.NotFound, errorResponse)
         }
