@@ -4,6 +4,7 @@ import com.martdev.domain.exceptions.*
 import com.martdev.dto.ErrorResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import kotlinx.serialization.SerializationException
@@ -53,6 +54,11 @@ fun Application.configureStatusPage() {
         exception<ForbiddenException> { call, cause ->
             val errorResponse = ErrorResponse(cause.message ?: "Forbidden")
             call.respond(status = HttpStatusCode.Forbidden, errorResponse)
+        }
+
+        exception<RequestValidationException> { call, cause ->
+            val errorResponse = ErrorResponse(cause.reasons.joinToString())
+            call.respond(HttpStatusCode.BadRequest, errorResponse)
         }
 
         status(HttpStatusCode.TooManyRequests) { call, status ->

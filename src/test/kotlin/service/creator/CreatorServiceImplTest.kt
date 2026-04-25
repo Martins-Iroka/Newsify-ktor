@@ -74,27 +74,6 @@ class CreatorServiceImplTest {
     }
 
     @Test
-    fun `should throw bad request exception for invalid news article data`() = runTest {
-        val dataWithInvalidTitle = request.copy(
-            title = ""
-        )
-
-        val badRequestExceptionForEmptyTitle = assertFailsWith<BadRequestException> {
-            service.saveNewsArticle(creatorId, dataWithInvalidTitle)
-        }
-        assertEquals("title is required", badRequestExceptionForEmptyTitle.error)
-
-        val dataWithInvalidContent = request.copy(
-            content = ""
-        )
-
-        val badRequestExceptionForEmptyContent = assertFailsWith<BadRequestException> {
-            service.saveNewsArticle(creatorId, dataWithInvalidContent)
-        }
-        assertEquals("content is required", badRequestExceptionForEmptyContent.error)
-    }
-
-    @Test
     fun `should throw bad request for db error unique violation`() = runTest {
         coEvery {
             repository.saveNewsArticle(any())
@@ -260,27 +239,6 @@ class CreatorServiceImplTest {
 
         assertEquals(newUpdate.title, response.title)
         assertEquals(newUpdate.content, response.content)
-    }
-
-    @Test
-    fun `should throw bad request exception for update news article containing invalid data`() = runTest {
-        val dataWithInvalidTitle = request.copy(
-            title = ""
-        )
-
-        val badRequestExceptionForEmptyTitle = assertFailsWith<BadRequestException> {
-            service.updateNewsArticle(creatorId, articleId,dataWithInvalidTitle)
-        }
-        assertEquals("title is required", badRequestExceptionForEmptyTitle.error)
-
-        val dataWithInvalidContent = request.copy(
-            content = ""
-        )
-
-        val badRequestExceptionForEmptyContent = assertFailsWith<BadRequestException> {
-            service.updateNewsArticle(creatorId, articleId,dataWithInvalidContent)
-        }
-        assertEquals("content is required", badRequestExceptionForEmptyContent.error)
     }
 
     @Test

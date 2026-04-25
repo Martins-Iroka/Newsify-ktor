@@ -13,12 +13,9 @@ import com.martdev.repository.user_repo.UserRepository
 import com.martdev.service.auth.Auth
 import com.martdev.service.otp_provider.OtpProvider
 import com.martdev.util.PasswordHasher
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit4.MockKRule
-import io.mockk.slot
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -88,28 +85,6 @@ class UserServiceImplTest {
     }
 
     @Test
-    fun `should throw bad request exception for invalid email address`() = runTest {
-        val user = UserRequest(
-            email = "invalid email",
-            password = "password",
-            username = "username",
-            role = "READER"
-        )
-
-        val exception = assertFailsWith<BadRequestException> {
-            service.registerUser(user)
-        }
-
-        assertEquals("invalid email format", exception.error)
-
-        coVerify(atLeast = 0) {
-            repository.saveUserAndVerificationToken(any(), any())
-            otpProvider.sendVerificationCode(any())
-            repository.deleteUserAndVerificationToken(any())
-        }
-    }
-
-    @Test
     fun `should throw bad request exception for duplicate email or username`() = runTest {
 
         coEvery {
@@ -151,6 +126,10 @@ class UserServiceImplTest {
             otpProvider.sendVerificationCode(any())
         } returns Pair("", "error")
 
+        coJustRun {
+            repository.deleteUserAndVerificationToken(any())
+        }
+
         val internalServerException = assertFailsWith<InternalServerException> {
             service.registerUser(user)
         }
@@ -187,46 +166,6 @@ class UserServiceImplTest {
 
         val response = service.verifyUser(request)
         assertEquals("verified", response.status)
-    }
-
-    @Test
-    fun `should throw bad request exception for invalid verification request`() = runTest {
-
-        val request = UserVerificationRequest(
-            "1234",
-            "emailId",
-            "token"
-        )
-
-        val invalidCodeException = assertFailsWith<BadRequestException> {
-            service.verifyUser(request)
-        }
-
-        assertEquals("code is not valid", invalidCodeException.error)
-
-        val request2 = UserVerificationRequest(
-            "123456",
-            "",
-            "token"
-        )
-
-        val invalidEmailIdException = assertFailsWith<BadRequestException> {
-            service.verifyUser(request2)
-        }
-
-        assertEquals("email id is needed", invalidEmailIdException.error)
-
-        val request3 = UserVerificationRequest(
-            "123456",
-            "emailId",
-            ""
-        )
-
-        val invalidTokenException = assertFailsWith<BadRequestException> {
-            service.verifyUser(request3)
-        }
-
-        assertEquals("token is needed", invalidTokenException.error)
     }
 
     @Test
@@ -328,19 +267,6 @@ class UserServiceImplTest {
         assertEquals(1, response.userId)
     }
 
-    @Test
-    fun `should throw bad request exception for invalid login request`() = runTest {
-        val request = UserLoginRequest(
-            email = "",
-            password = "123456"
-        )
-
-        val exception1 = assertFailsWith<BadRequestException> {
-            service.loginUser(request)
-        }
-
-        assertEquals("invalid email or password", exception1.error)
-    }
 
     @Test
     fun `should throw bad request exception for get user by email`() = runTest {
@@ -499,16 +425,6 @@ class UserServiceImplTest {
     }
 
     @Test
-    fun `should throw bad request exception for invalid refresh token`() = runTest {
-
-        val request = refreshTokenRequest.copy(refreshToken = "")
-
-        assertFailsWith<BadRequestException> {
-            service.refreshToken(request)
-        }
-    }
-
-    @Test
     fun `should throw unauthorized exception when getting user id by refresh token`() = runTest {
 
         coEvery {
@@ -562,17 +478,6 @@ class UserServiceImplTest {
 
         assertEquals("emailId", response.emailId)
         assertTrue(response.verificationToken.isNotEmpty())
-    }
-
-    @Test
-    fun `should throw bad request exception for invalid request otp`() = runTest {
-        val request = resendOTPRequest.copy(email = "invalid email")
-
-        val exception = assertFailsWith<BadRequestException> {
-            service.resendOTP(request)
-        }
-
-        assertEquals("invalid email", exception.error)
     }
 
     @Test

@@ -16,7 +16,7 @@ class CreatorServiceImpl(
     private val repository: CreatorRepository
 ) : CreatorService{
     override suspend fun saveNewsArticle(creatorId: Long, data: CreateNewsArticleRequest): Long {
-        validateNewsArticleData(data)
+
         val newsArticleData = NewsArticleData(
             title = data.title,
             content = data.content,
@@ -87,7 +87,6 @@ class CreatorServiceImpl(
         articleId: Long,
         newsArticleDataDto: CreateNewsArticleRequest
     ): NewsArticleResponse {
-        validateNewsArticleData(newsArticleDataDto)
         val data = NewsArticleData(
             id = articleId,
             title = newsArticleDataDto.title,
@@ -107,14 +106,6 @@ class CreatorServiceImpl(
                     updatedNewsArticle.content
                 )
             }
-        }
-    }
-
-    private fun validateNewsArticleData(dto: CreateNewsArticleRequest) {
-
-        when {
-            dto.title.isEmpty() -> throw BadRequestException("title is required")
-            dto.content.isEmpty() -> throw BadRequestException("content is required")
         }
     }
 }

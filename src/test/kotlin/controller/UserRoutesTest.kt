@@ -2,12 +2,14 @@ package com.martdev.controller
 
 import com.martdev.domain.exceptions.BadRequestException
 import com.martdev.domain.exceptions.InternalServerException
+import com.martdev.domain.exceptions.NotFoundException
 import com.martdev.domain.exceptions.UnauthorizedException
 import com.martdev.dto.DataResponse
+import com.martdev.dto.ErrorResponse
 import com.martdev.dto.request.*
 import com.martdev.dto.response.*
 import com.martdev.plugins.configureRateLimiter
-import com.martdev.plugins.configureRouting
+import com.martdev.plugins.configureRequestValidation
 import com.martdev.plugins.configureSerialization
 import com.martdev.plugins.configureStatusPage
 import com.martdev.service.user.UserService
@@ -19,6 +21,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
@@ -80,19 +83,19 @@ class UserRoutesTest {
     @Test
     fun `post register user returns 400`() = testApplication {
 
-        coEvery {
-            service.registerUser(any())
-        } throws BadRequestException()
+        val invalidUserRequest = userRequest.copy(email = "invalid email")
 
         application {
             testConfiguration()
         }
         val client = clientConfig()
         val response = client.post(registerPath) {
-            setBody(userRequest)
+            setBody(invalidUserRequest)
         }
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
+        val errorMessage = response.body<ErrorResponse>().error
+        assertEquals("Invalid email format", errorMessage)
     }
 
     @Test
@@ -115,7 +118,7 @@ class UserRoutesTest {
     }
 
     private val verifyRequest = UserVerificationRequest(
-        "code", "emailId", "token"
+        "123456", "test@email.com", "token"
     )
 
     @Test
@@ -141,6 +144,7 @@ class UserRoutesTest {
     @Test
     fun `verify user returns 400`() = testApplication {
 
+        val invalidVerificationRequest = verifyRequest.copy(code = "12345")
         coEvery {
             service.verifyUser(verifyRequest)
         } throws BadRequestException()
@@ -152,7 +156,7 @@ class UserRoutesTest {
         val client = clientConfig()
 
         val response = client.post(verifyUserPath) {
-            setBody(verifyRequest)
+            setBody(invalidVerificationRequest)
         }
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
@@ -179,7 +183,7 @@ class UserRoutesTest {
     }
 
     private val loginRequest = UserLoginRequest(
-        email = "email",
+        email = "test@email.com",
         password = "password"
     )
 
@@ -208,9 +212,7 @@ class UserRoutesTest {
     @Test
     fun `login user returns 400`() = testApplication {
 
-        coEvery {
-            service.loginUser(any())
-        } throws BadRequestException()
+        val invalidLoginRequest = loginRequest.copy(email = "invalid email")
 
         application {
             testConfiguration()
@@ -219,7 +221,7 @@ class UserRoutesTest {
         val client = clientConfig()
 
         val response = client.post(loginUserPath) {
-            setBody(loginRequest)
+            setBody(invalidLoginRequest)
         }
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
@@ -250,7 +252,7 @@ class UserRoutesTest {
 
         coEvery {
             service.loginUser(any())
-        } throws UnauthorizedException()
+        } throws NotFoundException()
 
         application {
             testConfiguration()
@@ -262,7 +264,7 @@ class UserRoutesTest {
             setBody(loginRequest)
         }
 
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        assertEquals(HttpStatusCode.NotFound, response.status)
     }
 
     @Test
@@ -345,7 +347,7 @@ class UserRoutesTest {
         assertEquals(HttpStatusCode.InternalServerError, response.status)
     }
 
-    private val resendOTPRequest = ResendOTPRequest("email")
+    private val resendOTPRequest = ResendOTPRequest("test@email.com")
 
     @Test
     fun `post resend otp returns 200`() = testApplication {
@@ -368,9 +370,7 @@ class UserRoutesTest {
 
     @Test
     fun `post resend otp returns 400`() = testApplication {
-        coEvery {
-            service.resendOTP(any())
-        } throws BadRequestException()
+        val invalidResendOTPRequest = resendOTPRequest.copy(email = "invalid email")
 
         application {
             testConfiguration()
@@ -379,7 +379,7 @@ class UserRoutesTest {
         val client = clientConfig()
 
         val response = client.post(resendOTPPath) {
-            setBody(resendOTPRequest)
+            setBody(invalidResendOTPRequest)
         }
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
@@ -436,7 +436,12 @@ class UserRoutesTest {
         configureSerialization()
         configureStatusPage()
         configureRateLimiter()
-        configureRouting()
+        configureRequestValidation()
+        routing {
+            route("/v1") {
+                userRoutes()
+            }
+        }
     }
 
     private fun ApplicationTestBuilder.clientConfig(): HttpClient = createClient {

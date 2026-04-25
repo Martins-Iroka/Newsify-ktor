@@ -5,7 +5,10 @@ import com.martdev.domain.Role
 import com.martdev.dto.DataResponse
 import com.martdev.dto.request.CreateNewsArticleRequest
 import com.martdev.dto.response.NewsArticleResponse
-import com.martdev.plugins.*
+import com.martdev.plugins.configureRateLimiter
+import com.martdev.plugins.configureSecurity
+import com.martdev.plugins.configureSerialization
+import com.martdev.plugins.configureStatusPage
 import com.martdev.service.auth.JWTAuthImpl
 import com.martdev.service.creator.CreatorService
 import io.ktor.client.*
@@ -16,6 +19,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.coJustRun
@@ -97,7 +101,6 @@ class CreatorRoutesTest {
         assertEquals(HttpStatusCode.Forbidden, response.status)
     }
 
-
     @Test
     fun testPostCreatorCreateNews_responseWithHttpStatusCode_Unauthorized_forInvalidToken() = testApplication {
         coEvery { service.saveNewsArticle(any(), any()) } returns 1L
@@ -109,6 +112,22 @@ class CreatorRoutesTest {
 
         val response = client.post("/v1/creator/create-news") {
             setBody(createNewsArticleRequest)
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun testPostCreatorCreateNews_responseWithHttpStatusCode_BadRequest() = testApplication {
+
+        val invalidRequest = createNewsArticleRequest.copy(title = "")
+        application {
+            testConfiguration()
+        }
+        val client = clientConfig("invalid token")
+
+        val response = client.post("/v1/creator/create-news") {
+            setBody(invalidRequest)
         }
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
@@ -201,7 +220,11 @@ class CreatorRoutesTest {
         configureStatusPage()
         configureSecurity()
         configureRateLimiter()
-        configureRouting()
+        routing {
+            route("/v1") {
+                creatorRoutes()
+            }
+        }
     }
 
     private fun ApplicationTestBuilder.clientConfig(token: String = ""): HttpClient = createClient {

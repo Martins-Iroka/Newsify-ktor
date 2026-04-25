@@ -20,7 +20,6 @@ import org.jetbrains.exposed.v1.core.exposedLogger
 import org.koin.core.annotation.Single
 import java.security.MessageDigest
 import java.util.*
-import kotlin.enums.enumEntries
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
@@ -31,7 +30,6 @@ class UserServiceImpl(
     private val auth: Auth
 ) : UserService {
     override suspend fun registerUser(user: UserRequest): UserResponse {
-        validateUserRequest(user)
 
         val hashedPassword = PasswordHasher.hash(user.password)
         val userModel = User(
@@ -63,7 +61,6 @@ class UserServiceImpl(
     }
 
     override suspend fun verifyUser(request: UserVerificationRequest): UserVerificationResponse {
-        validateVerificationRequest(request)
 
         val (isSuccess, errorMessage) = otpProvider.verifyCode(request.emailId, request.code)
         if (!isSuccess) {
@@ -80,7 +77,6 @@ class UserServiceImpl(
     }
 
     override suspend fun loginUser(request: UserLoginRequest): UserLoginResponse {
-        validateLoginUserRequest(request)
 
         return when (val result = repository.getUserByEmail(request.email)) {
             is DbResult.Failure -> {
@@ -140,7 +136,6 @@ class UserServiceImpl(
     }
 
     override suspend fun resendOTP(request: ResendOTPRequest): ResendOTPResponse {
-        if (request.email.isEmpty() || !emailPattern.matches(request.email)) throw BadRequestException("invalid email")
 
         return when(val userResult = repository.getUserByEmail(request.email)) {
             is DbResult.Failure -> {
@@ -161,38 +156,6 @@ class UserServiceImpl(
 
                 ResendOTPResponse(emailId, token)
             }
-        }
-    }
-
-    private val emailPattern = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+[a-zA-Z]{2,}$")
-
-    private fun validateUserRequest(user: UserRequest) {
-        val isValidRole = enumEntries<Role>().any { it.name == user.role.uppercase() }
-
-        when {
-            user.email.isEmpty() || !emailPattern.matches(user.email) -> throw BadRequestException("invalid email format")
-            user.password.length < 8 -> throw BadRequestException("password must be at least 8 characters long")
-            user.username.isBlank() -> throw BadRequestException("username cannot be empty")
-            !isValidRole ->
-                throw BadRequestException("Invalid role specified. Must be one of: ${enumEntries<Role>().joinToString { it.name }}")
-        }
-    }
-
-    private fun validateVerificationRequest(request: UserVerificationRequest) {
-        when {
-            request.code.isEmpty() || request.code.length != 6 -> throw BadRequestException("code is not valid")
-            request.emailId.isEmpty() -> throw BadRequestException("email id is needed")
-            request.token.isEmpty() -> throw BadRequestException("token is needed")
-        }
-    }
-
-    private fun validateLoginUserRequest(request: UserLoginRequest) {
-        when {
-            request.email.isEmpty()
-                    || request.email.length > 255
-                    || !emailPattern.matches(request.email)
-                    || request.password.isEmpty()
-                    || request.password.length < 8 -> throw BadRequestException("invalid email or password")
         }
     }
 
