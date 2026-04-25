@@ -1,6 +1,7 @@
 package com.martdev.service.auth
 
 import com.martdev.config.AuthConfig
+import com.martdev.domain.Role
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -15,7 +16,7 @@ class JWTAuthImplTest {
             audience = "audience"
         )
         val jwtAuth = JWTAuthImpl(authConfig)
-        val token = jwtAuth.generateAccessToken("1")
+        val token = jwtAuth.generateAccessToken("1", Role.CREATOR.name)
         assertTrue(token.isNotEmpty())
     }
 }

@@ -7,3 +7,5 @@ data class InternalServerException(val error: String = "the server encountered a
 data class NotFoundException(val error: String = "not found") : Exception(error)
 
 data class UnauthorizedException(val error: String = "unauthorized") : Exception(error)
+
+data class ForbiddenException(val error: String = "forbidden") : Exception(error)

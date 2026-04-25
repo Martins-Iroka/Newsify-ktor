@@ -1,5 +1,6 @@
 package com.martdev.service.user
 
+import com.martdev.domain.Role
 import com.martdev.domain.User
 import com.martdev.domain.exceptions.BadRequestException
 import com.martdev.domain.exceptions.InternalServerException
@@ -306,7 +307,7 @@ class UserServiceImplTest {
         }
 
         every {
-            auth.generateAccessToken(capture(userIdSlot))
+            auth.generateAccessToken(capture(userIdSlot), any())
         } answers {
             assertEquals("1", userIdSlot.captured)
             accessToken
@@ -417,7 +418,7 @@ class UserServiceImplTest {
         )
 
         every {
-            auth.generateAccessToken(any())
+            auth.generateAccessToken(any(), any())
         } returns accessToken
 
         every {
@@ -449,7 +450,7 @@ class UserServiceImplTest {
         )
 
         every {
-            auth.generateAccessToken(any())
+            auth.generateAccessToken(any(), any())
         } returns accessToken
 
         every {
@@ -472,15 +473,15 @@ class UserServiceImplTest {
     @Test
     fun `should refresh token successfully`() = runTest {
         coEvery {
-            repository.getUserIdByRefreshToken(any())
-        } returns DbResult.Success(1)
+            repository.getUserIdAndRoleByRefreshToken(any())
+        } returns DbResult.Success(User(id = 1, role = Role.CREATOR))
 
         coEvery {
             repository.revokeRefreshToken(any())
         } returns DbResult.Success(Unit)
 
         every {
-            auth.generateAccessToken(any())
+            auth.generateAccessToken(any(), any())
         } returns accessToken
 
         every {
@@ -511,7 +512,7 @@ class UserServiceImplTest {
     fun `should throw unauthorized exception when getting user id by refresh token`() = runTest {
 
         coEvery {
-            repository.getUserIdByRefreshToken(any())
+            repository.getUserIdAndRoleByRefreshToken(any())
         } returns DbResult.Failure(DbError.NotFound())
 
         assertFailsWith<UnauthorizedException> {

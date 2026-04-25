@@ -1,5 +1,6 @@
 package com.martdev.repository.user_repo
 
+import com.martdev.domain.Role
 import com.martdev.domain.User
 import com.martdev.repository.DbError
 import com.martdev.repository.DbResult
@@ -100,14 +101,14 @@ class UserRepositoryImpl : UserRepository {
         }
     }
 
-    override suspend fun getUserIdByRefreshToken(tokenHash: String): DbResult<Long> {
+    override suspend fun getUserIdAndRoleByRefreshToken(tokenHash: String): DbResult<User> {
         return withTransaction {
             val row = UsersTable.join(
                 otherTable = RefreshTokensTable,
                 joinType = JoinType.INNER,
                 onColumn = UsersTable.id,
                 otherColumn = RefreshTokensTable.userId
-            ).select(UsersTable.id).where {
+            ).select(UsersTable.id, UsersTable.role).where {
                 (RefreshTokensTable.tokenHash eq tokenHash) and
                         (RefreshTokensTable.expiryTime.greater(
                     CurrentDateTime
@@ -117,8 +118,9 @@ class UserRepositoryImpl : UserRepository {
             }.firstOrNull() ?: return@withTransaction DbResult.Failure(DbError.NotFound())
 
             val userId = row[UsersTable.id].value
+            val role = row[UsersTable.role]
 
-            DbResult.Success(userId)
+            DbResult.Success(User(id = userId, role = Role.valueOf(role)))
         }
     }
 

@@ -1,9 +1,6 @@
 package com.martdev.plugins
 
-import com.martdev.domain.exceptions.BadRequestException
-import com.martdev.domain.exceptions.InternalServerException
-import com.martdev.domain.exceptions.NotFoundException
-import com.martdev.domain.exceptions.UnauthorizedException
+import com.martdev.domain.exceptions.*
 import com.martdev.dto.ErrorResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -38,7 +35,7 @@ fun Application.configureStatusPage() {
             call.respond(status = HttpStatusCode.Unauthorized, errorResponse)
         }
 
-        exception<SerializationException> { call, cause ->
+        exception<SerializationException> { call, _ ->
             val errorResponse = ErrorResponse("Invalid request body format")
             call.respond(status = HttpStatusCode.BadRequest, errorResponse)
         }
@@ -49,9 +46,13 @@ fun Application.configureStatusPage() {
         }
 
         exception<Exception> { call, cause ->
-            cause.printStackTrace()
             val errorResponse = ErrorResponse(cause.message ?: "Internal server error")
             call.respond(status = HttpStatusCode.InternalServerError, errorResponse)
+        }
+
+        exception<ForbiddenException> { call, cause ->
+            val errorResponse = ErrorResponse(cause.message ?: "Forbidden")
+            call.respond(status = HttpStatusCode.Forbidden, errorResponse)
         }
 
         status(HttpStatusCode.TooManyRequests) { call, status ->

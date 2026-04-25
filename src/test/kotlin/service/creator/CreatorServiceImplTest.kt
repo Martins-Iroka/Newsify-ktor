@@ -256,7 +256,7 @@ class CreatorServiceImplTest {
             )
         )
 
-        val response = service.updateNewsArticle(creatorId, newUpdate)
+        val response = service.updateNewsArticle(creatorId, articleId,newUpdate, )
 
         assertEquals(newUpdate.title, response.title)
         assertEquals(newUpdate.content, response.content)
@@ -269,7 +269,7 @@ class CreatorServiceImplTest {
         )
 
         val badRequestExceptionForEmptyTitle = assertFailsWith<BadRequestException> {
-            service.updateNewsArticle(creatorId, dataWithInvalidTitle)
+            service.updateNewsArticle(creatorId, articleId,dataWithInvalidTitle)
         }
         assertEquals("title is required", badRequestExceptionForEmptyTitle.error)
 
@@ -278,7 +278,7 @@ class CreatorServiceImplTest {
         )
 
         val badRequestExceptionForEmptyContent = assertFailsWith<BadRequestException> {
-            service.updateNewsArticle(creatorId, dataWithInvalidContent)
+            service.updateNewsArticle(creatorId, articleId,dataWithInvalidContent)
         }
         assertEquals("content is required", badRequestExceptionForEmptyContent.error)
     }
@@ -290,7 +290,7 @@ class CreatorServiceImplTest {
         } returns DbResult.Failure(DbError.NotFound())
 
         assertFailsWith<NotFoundException> {
-            service.updateNewsArticle(creatorId, request)
+            service.updateNewsArticle(creatorId, articleId, request)
         }
     }
 
@@ -301,7 +301,7 @@ class CreatorServiceImplTest {
         } returns DbResult.Failure(DbError.ConnectionError("error"))
 
         assertFailsWith<InternalServerException> {
-            service.updateNewsArticle(creatorId, request)
+            service.updateNewsArticle(creatorId, articleId, request)
         }
     }
 }

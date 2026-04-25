@@ -1,5 +1,8 @@
 package com.martdev.controller
 
+import com.martdev.domain.Role
+import com.martdev.domain.exceptions.ForbiddenException
+import com.martdev.domain.exceptions.UnauthorizedException
 import com.martdev.dto.DataResponse
 import com.martdev.dto.ErrorResponse
 import com.martdev.dto.request.CreateNewsArticleRequest
@@ -29,9 +32,7 @@ fun Route.creatorRoutes() {
              *   - 500 [com.martdev.dto.ErrorResponse] internal server error.
              */
             post("/create-news") {
-                val creatorId = getJWTClaims() ?: return@post call.respond(
-                    HttpStatusCode.Unauthorized, ErrorResponse("invalid creatorId passed")
-                )
+                val creatorId = verifyCreatorAndGetId()
                 val newsArticleRequest = call.receive<CreateNewsArticleRequest>()
                 val articleId = service.saveNewsArticle(creatorId, newsArticleRequest)
                 val dataResponse = DataResponse(
@@ -70,17 +71,9 @@ fun Route.creatorRoutes() {
              *   - 500 [com.martdev.dto.ErrorResponse] internal server error.
              */
             get("/getAllNewsArticleByCreatorId") {
-                val creatorId = getJWTClaims()
+                val creatorId = verifyCreatorAndGetId()
                 val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 10
                 val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
-
-                if (creatorId == null) {
-                    val errorResponse = ErrorResponse(
-                        "Unauthorized"
-                    )
-                    call.respond(HttpStatusCode.Unauthorized, errorResponse)
-                    return@get
-                }
 
                 if (limit <= 0 || offset < 0) {
                     val errorResponse = ErrorResponse("'limit' must be positive and 'offset' must be non-negative.")
@@ -136,15 +129,8 @@ fun Route.creatorRoutes() {
 }
 
 private suspend inline fun RoutingContext.verifyPaths(block: (Long, Long) -> Unit) {
-    val creatorId = getJWTClaims()
+    val creatorId = verifyCreatorAndGetId()
     val articleId = call.parameters["articleId"]?.toLongOrNull()
-    if (creatorId == null) {
-        val errorResponse = ErrorResponse(
-            "unauthorized"
-        )
-        call.respond(HttpStatusCode.Unauthorized, errorResponse)
-        return
-    }
     if (articleId == null) {
         val errorResponse = ErrorResponse(
             "invalid articleId"
@@ -155,7 +141,10 @@ private suspend inline fun RoutingContext.verifyPaths(block: (Long, Long) -> Uni
     block(creatorId, articleId)
 }
 
-private fun RoutingContext.getJWTClaims(): Long? {
+private fun RoutingContext.verifyCreatorAndGetId(): Long {
     val principal = call.principal<JWTPrincipal>()
-    return principal?.payload?.getClaim("userId")?.asString()?.toLongOrNull()
+    if (principal?.payload?.getClaim("role")?.asString() != Role.CREATOR.name) {
+        throw ForbiddenException("You do not have the necessary permissions to perform this action.")
+    }
+    return principal.payload.getClaim("userId")?.asString()?.toLongOrNull() ?: throw UnauthorizedException("Missing or invalid userId claim in token")
 }

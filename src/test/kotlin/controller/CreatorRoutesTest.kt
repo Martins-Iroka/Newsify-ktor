@@ -1,6 +1,7 @@
 package com.martdev.controller
 
 import com.martdev.config.AuthConfig
+import com.martdev.domain.Role
 import com.martdev.dto.DataResponse
 import com.martdev.dto.request.CreateNewsArticleRequest
 import com.martdev.dto.response.NewsArticleResponse
@@ -57,7 +58,9 @@ class CreatorRoutesTest {
         content = "content"
     )
 
-    private val token = JWTAuthImpl(authConfig).generateAccessToken("1")
+    private val creatorToken = JWTAuthImpl(authConfig).generateAccessToken("1", Role.CREATOR.name)
+
+    private val readerToken = JWTAuthImpl(authConfig).generateAccessToken("2", Role.READER.name)
 
     @Test
     fun testPostCreatorCreateNews_responseWithHttpStatusCode_Created() = testApplication {
@@ -66,7 +69,7 @@ class CreatorRoutesTest {
         application {
             testConfiguration()
         }
-        val client = clientConfig(token)
+        val client = clientConfig(creatorToken)
 
         val response = client.post("/v1/creator/create-news") {
             setBody(createNewsArticleRequest)
@@ -78,7 +81,25 @@ class CreatorRoutesTest {
     }
 
     @Test
-    fun testPostCreatorCreateNews_responseWithHttpStatusCode_Unauthorized() = testApplication {
+    fun testPostCreatorCreateNews_responseWithHttpStatusCode_UnauthorizedForReaders() = testApplication {
+        coEvery { service.saveNewsArticle(any(), any()) } returns 1L
+
+        application {
+            testConfiguration()
+        }
+
+        val client = clientConfig(readerToken)
+
+        val response = client.post("/v1/creator/create-news") {
+            setBody(createNewsArticleRequest)
+        }
+
+        assertEquals(HttpStatusCode.Forbidden, response.status)
+    }
+
+
+    @Test
+    fun testPostCreatorCreateNews_responseWithHttpStatusCode_Unauthorized_forInvalidToken() = testApplication {
         coEvery { service.saveNewsArticle(any(), any()) } returns 1L
 
         application {
@@ -94,17 +115,31 @@ class CreatorRoutesTest {
     }
 
     @Test
-    fun testDeleteCreatorDeleteNewsArticleCreatorIdArticleId() = testApplication {
+    fun testDeleteNewsArticleByCreatorIdAndArticleId_respondWithHttpStatusCode_OK() = testApplication {
         coJustRun { service.deleteNewsArticle(1L, 1L) }
 
         application {
             testConfiguration()
         }
-        val client = clientConfig(token)
+        val client = clientConfig(creatorToken)
 
         val response = client.delete("/v1/creator/deleteNewsArticle/1")
 
         assertEquals(HttpStatusCode.OK, response.status)
+    }
+
+    @Test
+    fun testDeleteNewsArticleByCreatorIdAndArticleId_respondWithHttpStatusCode_Unauthorized() = testApplication {
+        coJustRun { service.deleteNewsArticle(1L, 1L) }
+
+        application {
+            testConfiguration()
+        }
+        val client = clientConfig(readerToken)
+
+        val response = client.delete("/v1/creator/deleteNewsArticle/1")
+
+        assertEquals(HttpStatusCode.Forbidden, response.status)
     }
 
     @Test
@@ -114,7 +149,7 @@ class CreatorRoutesTest {
         application {
             testConfiguration()
         }
-        val client = clientConfig(token)
+        val client = clientConfig(creatorToken)
 
         val response = client.get("/v1/creator/getAllNewsArticleByCreatorId")
 
@@ -131,7 +166,7 @@ class CreatorRoutesTest {
         application {
             testConfiguration()
         }
-        val client = clientConfig(token)
+        val client = clientConfig(creatorToken)
 
         val response = client.get("/v1/creator/getNewsArticleById/1")
 
@@ -142,14 +177,14 @@ class CreatorRoutesTest {
 
     @Test
     fun testPatchCreatorUpdateNewsArticle() = testApplication {
-        coEvery { service.updateNewsArticle(any(), any()) } returns newsArticleDto
+        coEvery { service.updateNewsArticle(any(), any(), any()) } returns newsArticleDto
 
         application {
             testConfiguration()
         }
-        val client = clientConfig(token)
+        val client = clientConfig(creatorToken)
 
-        val response = client.patch("/v1/creator/updateNewsArticle") {
+        val response = client.patch("/v1/creator/updateNewsArticle/1") {
             setBody(createNewsArticleRequest)
         }
 

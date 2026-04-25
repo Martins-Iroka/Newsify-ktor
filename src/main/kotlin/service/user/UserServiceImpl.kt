@@ -96,7 +96,7 @@ class UserServiceImpl(
 
                 if (!user.isVerified) throw UnauthorizedException("please verify your email before logging in")
 
-                val accessToken = auth.generateAccessToken(user.id.toString())
+                val accessToken = auth.generateAccessToken(user.id.toString(), user.role.name)
                 val refreshToken = auth.generateRefreshToken()
                 val refreshTokenInHex = generateHexValueFromToken(refreshToken)
                 val refreshExpiry = Clock.System.now().plus(24.hours).toLocalDateTime(TimeZone.UTC)
@@ -117,18 +117,19 @@ class UserServiceImpl(
 
         val tokenInHex = generateHexValueFromToken(request.refreshToken)
 
-        return when (val result = repository.getUserIdByRefreshToken(tokenInHex)) {
+        return when (val result = repository.getUserIdAndRoleByRefreshToken(tokenInHex)) {
             is DbResult.Failure -> when (result.error) {
                 is DbError.NotFound -> throw UnauthorizedException()
                 else -> throw InternalServerException()
             }
             is DbResult.Success -> {
+                val user = result.value
                 repository.revokeRefreshToken(tokenInHex)
-                val newAccessToken = auth.generateAccessToken(result.value.toString())
+                val newAccessToken = auth.generateAccessToken(user.id.toString(), user.role.name)
                 val newRefreshToken = auth.generateRefreshToken()
                 val newRefreshTokenInHex = generateHexValueFromToken(newRefreshToken)
                 val refreshExpiry = Clock.System.now().plus(24.hours).toLocalDateTime(TimeZone.UTC)
-                repository.saveRefreshToken(userId = result.value, newRefreshTokenInHex, refreshExpiry)
+                repository.saveRefreshToken(userId = user.id, newRefreshTokenInHex, refreshExpiry)
                 RefreshTokenResponse(newAccessToken, newRefreshToken)
             }
         }

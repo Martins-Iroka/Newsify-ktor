@@ -13,7 +13,7 @@ import kotlin.time.Duration.Companion.minutes
 class JWTAuthImpl(
     private val configuration: AuthConfig
 ) : Auth {
-    override fun generateAccessToken(userId: String): String {
+    override fun generateAccessToken(userId: String, role: String): String {
         val exp = configuration.exp
         val audience = configuration.audience
         val issuer = configuration.iss
@@ -22,6 +22,7 @@ class JWTAuthImpl(
 
         return JWT.create()
             .withClaim("userId", userId)
+            .withClaim("role", role)
             .withAudience(audience)
             .withIssuer(issuer)
             .withIssuedAt(Date(System.currentTimeMillis()))
