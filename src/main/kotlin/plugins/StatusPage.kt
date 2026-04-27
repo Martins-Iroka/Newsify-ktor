@@ -16,6 +16,11 @@ fun Application.configureStatusPage() {
             call.respond(status = HttpStatusCode.BadRequest, errorResponse)
         }
 
+        exception<io.ktor.server.plugins.BadRequestException> { call, cause ->
+            val errorResponse = ErrorResponse(cause.message ?: "Bad Request")
+            call.respond(status = HttpStatusCode.BadRequest, errorResponse)
+        }
+
         exception<NotFoundException> { call, cause ->
             val errorResponse = ErrorResponse(cause.message ?: "Not found")
             call.respond(status = HttpStatusCode.NotFound, errorResponse)
@@ -38,11 +43,6 @@ fun Application.configureStatusPage() {
 
         exception<SerializationException> { call, _ ->
             val errorResponse = ErrorResponse("Invalid request body format")
-            call.respond(status = HttpStatusCode.BadRequest, errorResponse)
-        }
-
-        exception<io.ktor.server.plugins.BadRequestException> { call, cause ->
-            val errorResponse = ErrorResponse(cause.message ?: "Bad Request")
             call.respond(status = HttpStatusCode.BadRequest, errorResponse)
         }
 

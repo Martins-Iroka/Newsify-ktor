@@ -1,4 +1,4 @@
-package com.martdev.service.user
+package service.user
 
 import com.martdev.domain.Role
 import com.martdev.domain.User
@@ -12,6 +12,8 @@ import com.martdev.repository.DbResult
 import com.martdev.repository.user_repo.UserRepository
 import com.martdev.service.auth.Auth
 import com.martdev.service.otp_provider.OtpProvider
+import com.martdev.service.user.UserService
+import com.martdev.service.user.UserServiceImpl
 import com.martdev.util.PasswordHasher
 import io.mockk.*
 import io.mockk.impl.annotations.MockK

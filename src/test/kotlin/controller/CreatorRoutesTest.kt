@@ -1,23 +1,19 @@
-package com.martdev.controller
+package controller
 
 import com.martdev.config.AuthConfig
+import com.martdev.controller.creatorRoutes
 import com.martdev.domain.Role
 import com.martdev.dto.DataResponse
 import com.martdev.dto.request.CreateNewsArticleRequest
 import com.martdev.dto.response.NewsArticleResponse
-import com.martdev.plugins.configureRateLimiter
 import com.martdev.plugins.configureSecurity
 import com.martdev.plugins.configureSerialization
 import com.martdev.plugins.configureStatusPage
 import com.martdev.service.auth.JWTAuthImpl
 import com.martdev.service.creator.CreatorService
-import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
@@ -25,11 +21,11 @@ import io.mockk.coEvery
 import io.mockk.coJustRun
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit4.MockKRule
-import kotlinx.serialization.json.Json
 import org.junit.Rule
 import org.junit.Test
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
+import util.clientConfig
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
@@ -219,23 +215,10 @@ class CreatorRoutesTest {
         configureSerialization()
         configureStatusPage()
         configureSecurity()
-        configureRateLimiter()
         routing {
             route("/v1") {
                 creatorRoutes()
             }
-        }
-    }
-
-    private fun ApplicationTestBuilder.clientConfig(token: String = ""): HttpClient = createClient {
-        install(ContentNegotiation) {
-            json(json = Json {
-                ignoreUnknownKeys = true
-            })
-        }
-        defaultRequest {
-            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            bearerAuth(token)
         }
     }
 }
