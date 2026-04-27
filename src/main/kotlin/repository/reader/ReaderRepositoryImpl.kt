@@ -12,7 +12,6 @@ import com.martdev.repository.tables.FollowersTable.readerID
 import com.martdev.repository.tables.NewsArticlesTable
 import com.martdev.repository.tables.UsersTable
 import com.martdev.repository.util.withTransaction
-import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.CompositeID
@@ -116,27 +115,6 @@ class ReaderRepositoryImpl : ReaderRepository {
                 content = content,
                 createdAt = createdAt
             ))
-        }
-    }
-
-    override suspend fun getFollowersByCreatorId(creatorId: Long): DbResult<List<User>> {
-        return withTransaction {
-            val followers2 = FollowersTable
-                .join(
-                    otherTable = UsersTable,
-                    joinType = JoinType.INNER,
-                    onColumn = readerID,
-                    otherColumn = UsersTable.id
-                )
-                .select(UsersTable.id, UsersTable.username)
-                .where { creatorID eq EntityID(creatorId, UsersTable) }
-                .map { row ->
-                    User(
-                        id = row[UsersTable.id].value,
-                        username = row[UsersTable.username],
-                    )
-                }
-            DbResult.Success(followers2)
         }
     }
 }

@@ -8,7 +8,7 @@ sealed class DbResult<out T> {
 sealed interface DbError {
     data class NotFound(val message: String = "Not found") : DbError
     data class ConnectionError(val message: String) : DbError
-    data class UnknownError(val cause: Throwable) : DbError
+    data class UnknownError(val cause: Throwable = Exception()) : DbError
     data object UniqueViolation : DbError
     data object ForeignKeyViolation : DbError
 }

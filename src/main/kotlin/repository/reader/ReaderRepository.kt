@@ -10,5 +10,4 @@ interface ReaderRepository {
     suspend fun unfollowCreator(creatorId: Long, readerId: Long): DbResult<Unit>
     suspend fun getAllArticlesByCreatorId(creatorId: Long): DbResult<List<NewsArticleData>>
     suspend fun getNewsArticleById(creatorId: Long, articleId: Long): DbResult<NewsArticleData>
-    suspend fun getFollowersByCreatorId(creatorId: Long): DbResult<List<User>>
 }

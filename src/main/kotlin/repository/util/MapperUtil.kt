@@ -11,16 +11,24 @@ import org.jetbrains.exposed.v1.jdbc.transactions.inTopLevelSuspendTransaction
 
 suspend fun <T> withTransaction(block: suspend JdbcTransaction.() -> DbResult<T>): DbResult<T> =
     withContext(Dispatchers.IO) {
-        inTopLevelSuspendTransaction {
-            addLogger(StdOutSqlLogger)
-            try {
-                block()
-            } catch (e: ExposedSQLException) {
-                val dbError = handleDbException(e)
-                DbResult.Failure(dbError)
-            } catch (e: Exception) {
-                DbResult.Failure(DbError.UnknownError(e))
+        try {
+            inTopLevelSuspendTransaction {
+                addLogger(StdOutSqlLogger)
+                try {
+                    block()
+                } catch (e: ExposedSQLException) {
+                    val dbError = handleDbException(e)
+                    DbResult.Failure(dbError)
+                } catch (e: Exception) {
+                    DbResult.Failure(DbError.UnknownError(e))
+                }
             }
+        } catch (_: ExposedSQLException) {
+            // UniqueViolation shouldn't be the db error type.
+            // an exception thrown was BatchUpdateException(23514)
+            DbResult.Failure(DbError.UniqueViolation)
+        } catch (e: Exception) {
+            DbResult.Failure(DbError.UnknownError(e))
         }
     }
 

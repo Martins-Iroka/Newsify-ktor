@@ -1,6 +1,7 @@
 package com.martdev.repository.creator_repo
 
 import com.martdev.domain.NewsArticleData
+import com.martdev.domain.User
 import com.martdev.repository.DbResult
 
 interface CreatorRepository {
@@ -9,4 +10,5 @@ interface CreatorRepository {
     suspend fun getAllNewsArticleByCreatorId(creatorId: Long, limit: Int, offset: Long): DbResult<List<NewsArticleData>>
     suspend fun deleteNewsArticle(creatorId: Long, articleId: Long): DbResult<Unit>
     suspend fun updateNewsArticle(newsArticleData: NewsArticleData): DbResult<NewsArticleData>
+    suspend fun getFollowersByCreatorId(creatorId: Long): DbResult<List<User>>
 }

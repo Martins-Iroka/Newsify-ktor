@@ -80,7 +80,16 @@ class ReaderRepositoryImplTest {
         val (cid2, rid2) = reader2FollowsResult.value
         assertEquals(savedCID, cid2)
         assertEquals(readerId2, rid2)
+    }
 
+    @Test
+    fun `should prevent a creator from following themselves`() = runTest {
+        saveCreatorAndUser()
+        val savedCID = firstCreatorId()
+
+        val result = readerRepository.followCreator(savedCID, savedCID)
+        assertTrue(result is DbResult.Failure)
+        println(result.toString())
     }
 
     @Test
@@ -99,18 +108,6 @@ class ReaderRepositoryImplTest {
 
         val reader2FollowsResult = readerRepository.followCreator(savedCID, readerId2)
         assertTrue(reader2FollowsResult is DbResult.Success)
-        val followersByCreatorIdResult = readerRepository.getFollowersByCreatorId(savedCID)
-        assertTrue(followersByCreatorIdResult is DbResult.Success)
-        assertEquals(2, followersByCreatorIdResult.value.size)
-    }
-
-    @Test
-    fun `should get empty list of followers of a creator`() = runTest {
-        saveCreatorAndUser()
-        val savedCID = lastCreatorId()
-        val followersByCreatorIdResult = readerRepository.getFollowersByCreatorId(savedCID)
-        assertTrue(followersByCreatorIdResult is DbResult.Success)
-        assertTrue(followersByCreatorIdResult.value.isEmpty())
     }
 
     @Test
@@ -132,10 +129,6 @@ class ReaderRepositoryImplTest {
 
         val unfollowerResult = readerRepository.unfollowCreator(savedCID, readerId)
         assertTrue(unfollowerResult is DbResult.Success)
-
-        val followersByCreatorIdResult2 = readerRepository.getFollowersByCreatorId(savedCID)
-        assertTrue(followersByCreatorIdResult2 is DbResult.Success)
-        assertEquals(1, followersByCreatorIdResult2.value.size)
     }
 
     @Test
