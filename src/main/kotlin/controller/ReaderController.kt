@@ -19,6 +19,15 @@ fun Route.readerRoutes() {
 
     authenticate(authJWT) {
         route("/reader") {
+            /**
+             * Tag: reader
+             *
+             * Get all creators
+             *
+             * Responses:
+             *      - 200 [com.martdev.dto.response.CreatorInfoResponse] list of all creators
+             *      - 500 [com.martdev.dto.ErrorResponse] internal server error
+             */
             get("/get-creators") {
                 verifyReaderRoleAndGetId()
                 val creators = service.getListOfCreators()
@@ -26,6 +35,16 @@ fun Route.readerRoutes() {
                 call.respond(HttpStatusCode.OK, response)
             }
 
+            /**
+             * Tag: reader
+             *
+             * Reader can follow a creator
+             *
+             * Responses:
+             *      - 200 [String] successfully followed creator
+             *      - 400 [com.martdev.dto.ErrorResponse] bad request
+             *      - 500 [com.martdev.dto.ErrorResponse] internal server error
+             */
             post("/follow-creator/{creatorId}") {
                 verifyReaderAndCreatorId { readerId, creatorId ->
                     service.followCreator(creatorId, readerId)
@@ -34,6 +53,16 @@ fun Route.readerRoutes() {
                 }
             }
 
+            /**
+             * Tag: reader
+             *
+             * Reader can unfollow a creator
+             *
+             * Responses:
+             *      - 200 [String] successfully unfollowed creator
+             *      - 404 [com.martdev.dto.ErrorResponse] not found
+             *      - 500 [com.martdev.dto.ErrorResponse] internal server error
+             */
             post("/unfollow-creator/{creatorId}") {
                 verifyReaderAndCreatorId { readerId, creatorId ->
                     service.unfollowCreator(creatorId, readerId)
@@ -42,6 +71,15 @@ fun Route.readerRoutes() {
                 }
             }
 
+            /**
+             * Tag: reader
+             *
+             * Get News articles by a creator
+             *
+             * Responses:
+             *      - 200 [List<NewsArticleResponse>] list of news article by a creator
+             *      - 500 [com.martdev.dto.ErrorResponse] internal server error
+             */
             get("/get-articles-by-creatorId/{creatorId}") {
                 verifyReaderAndCreatorId { _, creatorId ->
                     val result = service.getAllArticlesByCreatorId(creatorId)
@@ -50,6 +88,16 @@ fun Route.readerRoutes() {
                 }
             }
 
+            /**
+             * Tag: reader
+             *
+             * Get news article by article id using creator id
+             *
+             * Responses:
+             *      - 200 [com.martdev.dto.response.NewsArticleResponse] returned news article details
+             *      - 404 [com.martdev.dto.ErrorResponse] not found
+             *      - 500 [com.martdev.dto.ErrorResponse] internal server error
+             */
             get("/{creatorId}/get-news-article-by-id/{articleId}") {
                 verifyReaderAndCreatorId { _, creatorId ->
                     val articleId = call.parameters["articleId"]?.toLongOrNull() ?: return@get call.respond(

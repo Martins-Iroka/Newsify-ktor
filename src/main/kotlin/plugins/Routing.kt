@@ -9,9 +9,9 @@ import io.ktor.server.routing.*
 fun Application.configureRouting() {
     routing {
         route("/v1") {
+            userRoutes()
             creatorRoutes()
             readerRoutes()
-            userRoutes()
         }
     }
 }

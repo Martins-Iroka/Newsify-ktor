@@ -67,7 +67,7 @@ fun Route.creatorRoutes() {
              * Get all news article by creator id
              *
              * Responses:
-             *   - 200 [kotlin.collections.List<com.martdev.dto.response.NewsArticleDataDto>] A list of news articles.
+             *   - 200 [kotlin.collections.List<NewsArticleResponse>] A list of news articles.
              *   - 500 [com.martdev.dto.ErrorResponse] internal server error.
              */
             get("/getAllNewsArticleByCreatorId") {
