@@ -8,14 +8,13 @@ import com.martdev.dto.request.CreateNewsArticleRequest
 import com.martdev.repository.DbError
 import com.martdev.repository.DbResult
 import com.martdev.repository.creator_repo.CreatorRepository
+import com.martdev.service.notification.NotificationService
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit4.MockKRule
 import io.mockk.slot
 import kotlinx.coroutines.test.runTest
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -30,16 +29,10 @@ class CreatorServiceImplTest {
     @MockK
     private lateinit var repository: CreatorRepository
 
+    @MockK
+    private lateinit var notificationService: NotificationService
+
     private lateinit var service: CreatorService
-
-    @Before
-    fun setup() {
-        service = CreatorServiceImpl(repository)
-    }
-
-    @After
-    fun tearDown() {
-    }
 
     private val data = NewsArticleData(
         id = 1,
@@ -56,7 +49,7 @@ class CreatorServiceImplTest {
     private val articleId = 11L
 
     @Test
-    fun `should save news article returns id`() = runTest {
+    fun `should save news article returns id`() = performTest {
 
         val requestSlot = slot<NewsArticleData>()
         coEvery {
@@ -74,7 +67,7 @@ class CreatorServiceImplTest {
     }
 
     @Test
-    fun `should throw bad request for db error unique violation`() = runTest {
+    fun `should throw bad request for db error unique violation`() = performTest {
         coEvery {
             repository.saveNewsArticle(any())
         } returns DbResult.Failure(
@@ -89,7 +82,7 @@ class CreatorServiceImplTest {
     }
 
     @Test
-    fun `should throw internal server`() = runTest {
+    fun `should throw internal server`() = performTest {
         coEvery {
             repository.saveNewsArticle(any())
         } returns DbResult.Failure(
@@ -102,7 +95,7 @@ class CreatorServiceImplTest {
     }
 
     @Test
-    fun `should get news article by id successfully`() = runTest {
+    fun `should get news article by id successfully`() = performTest {
         val creatorIdSlot = slot<Long>()
         val articleIdSlot = slot<Long>()
 
@@ -125,7 +118,7 @@ class CreatorServiceImplTest {
     }
 
     @Test
-    fun `should throw not found exception for get news article by id`() = runTest {
+    fun `should throw not found exception for get news article by id`() = performTest {
         coEvery {
             repository.getNewsArticleById(
                 any(), any()
@@ -138,7 +131,7 @@ class CreatorServiceImplTest {
     }
 
     @Test
-    fun `should throw internal server exception for get news article by id`() = runTest {
+    fun `should throw internal server exception for get news article by id`() = performTest {
         coEvery {
             repository.getNewsArticleById(
                 any(), any()
@@ -153,7 +146,7 @@ class CreatorServiceImplTest {
     private val limit = 1
     private val offset = 0L
     @Test
-    fun `should get all news article by creator id`() = runTest {
+    fun `should get all news article by creator id`() = performTest {
         val creatorIdSlot = slot<Long>()
         val limitSlot = slot<Int>()
         val offsetSlot = slot<Long>()
@@ -179,7 +172,7 @@ class CreatorServiceImplTest {
     }
 
     @Test
-    fun `get all news article returns empty list`() = runTest {
+    fun `get all news article returns empty list`() = performTest {
         coEvery {
             repository.getAllNewsArticleByCreatorId(any(), any(), any())
         } returns DbResult.Success(emptyList())
@@ -190,7 +183,7 @@ class CreatorServiceImplTest {
     }
 
     @Test
-    fun `should throw internal server error for get all news article`() = runTest {
+    fun `should throw internal server error for get all news article`() = performTest {
         coEvery {
             repository.getAllNewsArticleByCreatorId(any(), any(), any())
         } returns DbResult.Failure(DbError.ConnectionError(""))
@@ -201,7 +194,7 @@ class CreatorServiceImplTest {
     }
 
     @Test
-    fun `should delete news article`() = runTest {
+    fun `should delete news article`() = performTest {
         coEvery {
             repository.deleteNewsArticle(any(), any())
         } returns DbResult.Success(Unit)
@@ -214,7 +207,7 @@ class CreatorServiceImplTest {
     }
 
     @Test
-    fun `should delete news article throws internal server exception`() = runTest {
+    fun `should delete news article throws internal server exception`() = performTest {
         coEvery {
             repository.deleteNewsArticle(any(), any())
         } returns DbResult.Failure(DbError.ConnectionError(""))
@@ -223,7 +216,7 @@ class CreatorServiceImplTest {
     }
 
     @Test
-    fun `should update news article then returns new update`() = runTest {
+    fun `should update news article then returns new update`() = performTest {
         val newUpdate = request.copy(title = "title2", content = "content2")
 
         coEvery {
@@ -242,7 +235,7 @@ class CreatorServiceImplTest {
     }
 
     @Test
-    fun `should throw not found exception for update news article`() = runTest {
+    fun `should throw not found exception for update news article`() = performTest {
         coEvery {
             repository.updateNewsArticle(any())
         } returns DbResult.Failure(DbError.NotFound())
@@ -253,7 +246,7 @@ class CreatorServiceImplTest {
     }
 
     @Test
-    fun `should throw internal server exception for update news article`() = runTest {
+    fun `should throw internal server exception for update news article`() = performTest {
         coEvery {
             repository.updateNewsArticle(any())
         } returns DbResult.Failure(DbError.ConnectionError("error"))
@@ -261,5 +254,10 @@ class CreatorServiceImplTest {
         assertFailsWith<InternalServerException> {
             service.updateNewsArticle(creatorId, articleId, request)
         }
+    }
+    
+    private inline fun performTest(crossinline block: suspend () -> Unit) = runTest { 
+        service = CreatorServiceImpl(repository, notificationService, this)
+        block()
     }
 }

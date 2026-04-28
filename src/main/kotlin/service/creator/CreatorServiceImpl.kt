@@ -9,11 +9,16 @@ import com.martdev.dto.response.NewsArticleResponse
 import com.martdev.repository.DbError
 import com.martdev.repository.DbResult
 import com.martdev.repository.creator_repo.CreatorRepository
+import com.martdev.service.notification.NotificationService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 
 @Single
 class CreatorServiceImpl(
-    private val repository: CreatorRepository
+    private val repository: CreatorRepository,
+    private val notificationService: NotificationService,
+    private val scope: CoroutineScope
 ) : CreatorService{
     override suspend fun saveNewsArticle(creatorId: Long, data: CreateNewsArticleRequest): Long {
 
@@ -29,7 +34,16 @@ class CreatorServiceImpl(
                     else -> throw InternalServerException()
                 }
             }
-            is DbResult.Success -> result.value
+            is DbResult.Success -> {
+                scope.launch {
+                    try {
+                        notificationService.notifyFollowers(creatorId, newsArticleData.title)
+                    } catch (e: Exception) {
+                        println("Failed to notify followers fo creator $creatorId and article ${newsArticleData.title}: $e")
+                    }
+                }
+                result.value
+            }
         }
     }
 

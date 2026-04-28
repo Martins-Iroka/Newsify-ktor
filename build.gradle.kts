@@ -74,6 +74,7 @@ dependencies {
     implementation("io.ktor:ktor-server-rate-limit")
     implementation("io.ktor:ktor-server-call-logging")
     implementation("io.ktor:ktor-server-request-validation")
+    implementation("com.google.firebase:firebase-admin:9.8.0")
     testImplementation("io.ktor:ktor-server-test-host-jvm")
     ksp("io.insert-koin:koin-ksp-compiler:$koin_annotation_version")
     testImplementation("org.testcontainers:testcontainers:$test_container_version")

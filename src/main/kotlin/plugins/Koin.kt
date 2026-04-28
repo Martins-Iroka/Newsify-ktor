@@ -4,6 +4,7 @@ import com.martdev.config.AuthConfig
 import com.martdev.config.DBConfig
 import com.martdev.config.StytchConfig
 import io.ktor.server.application.*
+import kotlinx.coroutines.*
 import org.koin.dsl.module
 import org.koin.ksp.generated.com_martdev_AppModule
 import org.koin.ktor.plugin.Koin
@@ -33,14 +34,24 @@ fun Application.configureKoin() {
     )
     val stytchConfig = StytchConfig(stytchId, stytchSecret)
 
+    val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     install(Koin) {
         slf4jLogger()
         val configModule = module {
             single { authConfig }
             single { dbConfig }
             single { stytchConfig }
+            single<CoroutineScope> {
+                val appJob = coroutineContext[Job]
+                CoroutineScope(coroutineContext + SupervisorJob(parent = appJob))
+            }
         }
         modules(com_martdev_AppModule, configModule)
+    }
+
+    monitor.subscribe(ApplicationStopping) {
+        scope.cancel("Application is stopping")
     }
 }
 private fun ApplicationEnvironment.getEnvValue(key: String) = config.property(key).getString()

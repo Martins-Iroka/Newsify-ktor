@@ -10,4 +10,5 @@ data class User(
     val password: String = "",
     val isVerified: Boolean = false,
     val role: Role = Role.READER,
+    val fcmToken: String = ""
 )

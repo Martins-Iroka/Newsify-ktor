@@ -127,12 +127,13 @@ class CreatorRepositoryImpl : CreatorRepository {
                     onColumn = readerID,
                     otherColumn = UsersTable.id
                 )
-                .select(UsersTable.id, UsersTable.username)
+                .select(UsersTable.id, UsersTable.username, UsersTable.fcmToken)
                 .where { creatorID eq EntityID(creatorId, UsersTable) }
                 .map { row ->
                     User(
                         id = row[UsersTable.id].value,
                         username = row[UsersTable.username],
+                        fcmToken = row[UsersTable.fcmToken] ?: ""
                     )
                 }
             DbResult.Success(followers2)

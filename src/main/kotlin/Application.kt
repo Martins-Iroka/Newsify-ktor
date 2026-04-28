@@ -24,4 +24,5 @@ fun Application.module() {
     configureRouting()
     configureRequestValidation()
     configureBackgroundJobs()
+    configureFirebase()
 }
