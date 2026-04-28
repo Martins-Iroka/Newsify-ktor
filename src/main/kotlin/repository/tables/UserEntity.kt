@@ -16,6 +16,7 @@ object UsersTable : LongIdTable("users") {
     val isVerified = bool("is_verified").default(false)
     val role = text("role").default("reader")
     val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
+    val fcmToken = varchar("fcm_token", 255).nullable()
 }
 
 class UserEntity(id: EntityID<Long>) : LongEntity(id) {
@@ -26,6 +27,7 @@ class UserEntity(id: EntityID<Long>) : LongEntity(id) {
     var password by UsersTable.password
     var isVerified by UsersTable.isVerified
     var role by UsersTable.role
+    var fcmToken by UsersTable.fcmToken
 }
 
 fun UserEntity.toUserModel() = User(

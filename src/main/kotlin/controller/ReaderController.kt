@@ -5,10 +5,12 @@ import com.martdev.domain.exceptions.ForbiddenException
 import com.martdev.domain.exceptions.UnauthorizedException
 import com.martdev.dto.DataResponse
 import com.martdev.dto.ErrorResponse
+import com.martdev.dto.request.FcmTokenRequest
 import com.martdev.service.reader.ReaderService
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -107,6 +109,23 @@ fun Route.readerRoutes() {
                     val response = DataResponse(result)
                     call.respond(HttpStatusCode.OK, response)
                 }
+            }
+
+            /**
+             * Tag: reader
+             *
+             * add fcm token for notification
+             *
+             * Responses:
+             *      - 200 token was successfully added
+             *      - 404 [com.martdev.dto.ErrorResponse] reader not found
+             *      - 500 [com.martdev.dto.ErrorResponse] internal server error
+             */
+            patch("/addFcmToken") {
+                val readerId = verifyReaderRoleAndGetId()
+                val token = call.receive<FcmTokenRequest>()
+                service.updateFcmToken(readerId, token.fcmToken)
+                call.respond(HttpStatusCode.OK)
             }
         }
     }

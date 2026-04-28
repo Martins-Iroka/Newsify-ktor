@@ -10,4 +10,5 @@ interface ReaderRepository {
     suspend fun unfollowCreator(creatorId: Long, readerId: Long): DbResult<Unit>
     suspend fun getAllArticlesByCreatorId(creatorId: Long): DbResult<List<NewsArticleData>>
     suspend fun getNewsArticleById(creatorId: Long, articleId: Long): DbResult<NewsArticleData>
+    suspend fun updateFcmToken(readerId: Long, token: String): DbResult<Unit>
 }

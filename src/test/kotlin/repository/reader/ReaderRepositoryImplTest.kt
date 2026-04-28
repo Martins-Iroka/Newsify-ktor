@@ -164,6 +164,14 @@ class ReaderRepositoryImplTest {
         assertEquals("content1", article.content)
     }
 
+    @Test
+    fun `add fcm token to an existing reader data`() = runTest {
+        saveCreatorAndUser()
+        val savedReaderId = getReaderID()
+        val result = readerRepository.updateFcmToken(savedReaderId, "fcm_token")
+        assertTrue(result is DbResult.Success)
+    }
+
     private suspend fun getReaderID(email: String = "testing112@email.com"): Long {
         val userResult = userRepository.getUserByEmail(email)
         val id = (userResult as DbResult.Success).value.id

@@ -9,4 +9,5 @@ interface ReaderService {
     suspend fun unfollowCreator(creatorId: Long, readerId: Long)
     suspend fun getAllArticlesByCreatorId(creatorId: Long): List<NewsArticleResponse>
     suspend fun getNewsArticleById(creatorId: Long, articleId: Long): NewsArticleResponse
+    suspend fun updateFcmToken(readerId: Long, token: String)
 }

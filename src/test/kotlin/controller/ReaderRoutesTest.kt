@@ -3,6 +3,8 @@ package controller
 import com.martdev.config.AuthConfig
 import com.martdev.controller.readerRoutes
 import com.martdev.domain.Role
+import com.martdev.domain.exceptions.NotFoundException
+import com.martdev.dto.request.FcmTokenRequest
 import com.martdev.dto.response.CreatorInfoResponse
 import com.martdev.dto.response.NewsArticleResponse
 import com.martdev.plugins.configureSecurity
@@ -168,6 +170,56 @@ class ReaderRoutesTest {
         val client = clientConfig(readerToken)
         client.post("/reader/unfollow-creator/1").apply {
             assertEquals(HttpStatusCode.OK, status)
+        }
+    }
+
+    @Test
+    fun `add fcm token should respond with HttpStatusCodeOk`() = testApplication {
+        coJustRun {
+            service.updateFcmToken(any(), any())
+        }
+        application {
+            readerConfiguration()
+        }
+        val client = clientConfig(readerToken)
+        client.patch("/reader/addFcmToken") {
+            setBody(FcmTokenRequest("token"))
+        }.apply {
+            assertEquals(HttpStatusCode.OK, status)
+        }
+    }
+
+    @Test
+    fun `add fcm token should respond with HttpStatusCodeNotFound`() = testApplication {
+        coEvery {
+            service.updateFcmToken(any(), any())
+        } throws NotFoundException()
+
+        application {
+            readerConfiguration()
+        }
+        val client = clientConfig(readerToken)
+        client.patch("/reader/addFcmToken") {
+            setBody(FcmTokenRequest("token"))
+        }.apply {
+            assertEquals(HttpStatusCode.NotFound, status)
+        }
+    }
+
+    @Test
+    fun `add fcm token should respond with HttpStatusCodeInternalServer`() = testApplication {
+        coEvery {
+            service.updateFcmToken(any(), any())
+        } throws NotFoundException()
+
+        application {
+            readerConfiguration()
+        }
+        val client = clientConfig(readerToken)
+        client.patch("/reader/addFcmToken") {
+            setBody(FcmTokenRequest("token"))
+        }.apply {
+            assertEquals(HttpStatusCode.NotFound, status)
         }
     }
 

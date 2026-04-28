@@ -5,12 +5,9 @@ import com.martdev.domain.Role
 import com.martdev.domain.User
 import com.martdev.repository.DbError
 import com.martdev.repository.DbResult
-import com.martdev.repository.tables.FollowersEntity
-import com.martdev.repository.tables.FollowersTable
+import com.martdev.repository.tables.*
 import com.martdev.repository.tables.FollowersTable.creatorID
 import com.martdev.repository.tables.FollowersTable.readerID
-import com.martdev.repository.tables.NewsArticlesTable
-import com.martdev.repository.tables.UsersTable
 import com.martdev.repository.util.withTransaction
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
@@ -115,6 +112,16 @@ class ReaderRepositoryImpl : ReaderRepository {
                 content = content,
                 createdAt = createdAt
             ))
+        }
+    }
+
+    override suspend fun updateFcmToken(readerId: Long, token: String): DbResult<Unit> {
+        return withTransaction {
+            UserEntity.findByIdAndUpdate(readerId) {
+                it.fcmToken = token
+            } ?: return@withTransaction DbResult.Failure(DbError.NotFound())
+
+            DbResult.Success(Unit)
         }
     }
 }

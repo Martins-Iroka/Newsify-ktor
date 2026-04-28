@@ -77,4 +77,14 @@ class ReaderServiceImpl(
             }
         }
     }
+
+    override suspend fun updateFcmToken(readerId: Long, token: String) {
+        val result = readerRepository.updateFcmToken(readerId, token)
+        if (result is DbResult.Failure) {
+            if (result.error is DbError.NotFound) {
+                throw NotFoundException()
+            }
+            throw InternalServerException()
+        }
+    }
 }

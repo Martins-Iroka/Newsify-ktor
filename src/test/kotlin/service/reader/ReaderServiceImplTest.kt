@@ -216,4 +216,35 @@ class ReaderServiceImplTest {
             service.getNewsArticleById(1, 2)
         }
     }
+
+    @Test
+    fun `add fcm token to an existing reader data`() = runTest {
+        coEvery {
+            repository.updateFcmToken(any(), any())
+        } returns DbResult.Success(Unit)
+
+        service.updateFcmToken(1, "token")
+
+        coVerify {
+            repository.updateFcmToken(any(), any())
+        }
+    }
+
+    @Test
+    fun `add fcm token to an existing reader data throws not found exception`() = runTest {
+        coEvery {
+            repository.updateFcmToken(any(), any())
+        } returns DbResult.Failure(DbError.NotFound())
+
+        assertFailsWith<NotFoundException>{ service.updateFcmToken(1, "token") }
+    }
+
+    @Test
+    fun `add fcm token to an existing reader data throws internal server exception`() = runTest {
+        coEvery {
+            repository.updateFcmToken(any(), any())
+        } returns DbResult.Failure(DbError.UnknownError())
+
+        assertFailsWith<InternalServerException>{ service.updateFcmToken(1, "token") }
+    }
 }
