@@ -2,9 +2,12 @@ package com.martdev.plugins
 
 import com.martdev.config.AuthConfig
 import com.martdev.config.DBConfig
+import com.martdev.config.FirebaseConfig
 import com.martdev.config.StytchConfig
 import io.ktor.server.application.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import org.koin.dsl.module
 import org.koin.ksp.generated.com_martdev_AppModule
 import org.koin.ktor.plugin.Koin
@@ -27,6 +30,8 @@ fun Application.configureKoin() {
     val stytchId = environment.getEnvValue("stytch.stytchID")
     val stytchSecret = environment.getEnvValue("stytch.stytchSecret")
 
+    val projectId = environment.getEnvValue("firebase.projectId")
+
     val authConfig = AuthConfig(secret, exp, issuer, audience)
 
     val dbConfig = DBConfig(
@@ -34,7 +39,7 @@ fun Application.configureKoin() {
     )
     val stytchConfig = StytchConfig(stytchId, stytchSecret)
 
-    val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    val firebaseConfig = FirebaseConfig(projectId)
 
     install(Koin) {
         slf4jLogger()
@@ -42,16 +47,13 @@ fun Application.configureKoin() {
             single { authConfig }
             single { dbConfig }
             single { stytchConfig }
+            single { firebaseConfig }
             single<CoroutineScope> {
                 val appJob = coroutineContext[Job]
                 CoroutineScope(coroutineContext + SupervisorJob(parent = appJob))
             }
         }
         modules(com_martdev_AppModule, configModule)
-    }
-
-    monitor.subscribe(ApplicationStopping) {
-        scope.cancel("Application is stopping")
     }
 }
 private fun ApplicationEnvironment.getEnvValue(key: String) = config.property(key).getString()

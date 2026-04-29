@@ -17,6 +17,9 @@ stytch:
   stytchID: ${STYTCH_PROJECT_ID}
   stytchSecret: ${STYTCH_SECRET}
 
+firebase:
+  projectId: "newsify-8f49a"
+
 jwt:
   secret: "test"
   issuer: "com.martdev"
