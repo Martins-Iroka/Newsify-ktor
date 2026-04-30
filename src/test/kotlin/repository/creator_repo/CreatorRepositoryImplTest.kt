@@ -1,13 +1,11 @@
 package com.martdev.repository.creator_repo
 
 import com.martdev.domain.NewsArticleData
-import com.martdev.repository.DbError
-import com.martdev.repository.DbResult
-import com.martdev.repository.connectAndMigrate
-import com.martdev.repository.postgres
+import com.martdev.repository.*
 import kotlinx.coroutines.test.runTest
-import org.junit.After
+import org.junit.AfterClass
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -23,16 +21,26 @@ class CreatorRepositoryImplTest {
         creatorId = 12,
     )
 
-    @Before
-    fun setup() {
-        postgres.start()
-        connectAndMigrate()
-        repository = CreatorRepositoryImpl()
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun startContainer() {
+            postgres.start()
+            connectAndMigrate()
+        }
+
+        @AfterClass
+        @JvmStatic
+        fun stopContainer() {
+            postgres.stop()
+        }
     }
 
-    @After
-    fun tearDown() {
-        postgres.stop()
+
+    @Before
+    fun setup() {
+        resetDbTable()
+        repository = CreatorRepositoryImpl()
     }
 
     @Test

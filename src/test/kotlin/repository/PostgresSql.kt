@@ -2,6 +2,7 @@ package com.martdev.repository
 
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.testcontainers.postgresql.PostgreSQLContainer
 
 val postgres: PostgreSQLContainer = PostgreSQLContainer("postgres:16-alpine").apply {
@@ -23,4 +24,12 @@ fun connectAndMigrate(): Database {
         user = postgres.username,
         password = postgres.password
     )
+}
+
+fun resetDbTable() {
+    transaction {
+        exec(
+            "TRUNCATE TABLE followers, refresh_tokens, users_verification_tracking, news_article, users RESTART IDENTITY CASCADE"
+        )
+    }
 }

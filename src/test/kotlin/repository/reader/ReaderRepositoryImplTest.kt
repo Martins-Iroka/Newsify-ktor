@@ -3,16 +3,12 @@ package com.martdev.repository.reader
 import com.martdev.domain.NewsArticleData
 import com.martdev.domain.Role
 import com.martdev.domain.User
-import com.martdev.repository.DbError
-import com.martdev.repository.DbResult
-import com.martdev.repository.connectAndMigrate
+import com.martdev.repository.*
 import com.martdev.repository.creator_repo.CreatorRepository
 import com.martdev.repository.creator_repo.CreatorRepositoryImpl
-import com.martdev.repository.postgres
 import com.martdev.repository.user_repo.UserRepository
 import com.martdev.repository.user_repo.UserRepositoryImpl
 import kotlinx.coroutines.test.runTest
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
@@ -29,24 +25,23 @@ class ReaderRepositoryImplTest {
     private lateinit var creatorRepository: CreatorRepository
 
     companion object {
-        @BeforeClass @JvmStatic
+        @BeforeClass
+        @JvmStatic
         fun startContainer() {
             postgres.start()
             connectAndMigrate()
         }
 
-        @AfterClass @JvmStatic
+        @AfterClass
+        @JvmStatic
         fun stopContainer() {
             postgres.stop()
         }
     }
+
     @Before
     fun setUp() {
-        transaction {
-            exec(
-                "TRUNCATE TABLE followers, refresh_tokens, users_verification_tracking, news_article, users RESTART IDENTITY CASCADE"
-            )
-        }
+        resetDbTable()
         readerRepository = ReaderRepositoryImpl()
         userRepository = UserRepositoryImpl()
         creatorRepository = CreatorRepositoryImpl()
@@ -54,7 +49,7 @@ class ReaderRepositoryImplTest {
 
     @Test
     fun `should get list of valid creators`() = runTest {
-      saveCreatorAndUser()
+        saveCreatorAndUser()
         val creatorsResult = readerRepository.getListOfCreators()
         assertTrue(creatorsResult is DbResult.Success)
         assertEquals(3, creatorsResult.value.size)
