@@ -8,7 +8,7 @@ interface ReaderRepository {
     suspend fun getListOfCreators(): DbResult<List<User>>
     suspend fun followCreator(creatorId: Long, readerId: Long): DbResult<Pair<Long, Long>>
     suspend fun unfollowCreator(creatorId: Long, readerId: Long): DbResult<Unit>
-    suspend fun getAllArticlesByCreatorId(creatorId: Long): DbResult<List<NewsArticleData>>
+    suspend fun getAllArticlesByCreators(creatorIds: List<Long>, limit: Int, offset: Long): DbResult<List<NewsArticleData>>
     suspend fun getNewsArticleById(creatorId: Long, articleId: Long): DbResult<NewsArticleData>
     suspend fun updateFcmToken(readerId: Long, token: String): DbResult<Unit>
 }

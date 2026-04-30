@@ -45,8 +45,12 @@ class ReaderServiceImpl(
         }
     }
 
-    override suspend fun getAllArticlesByCreatorId(creatorId: Long): List<NewsArticleResponse> {
-        return when(val result = readerRepository.getAllArticlesByCreatorId(creatorId)) {
+    override suspend fun getAllArticlesByCreators(
+        creatorIds: List<Long>,
+        limit: Int,
+        offset: Long
+    ): List<NewsArticleResponse> {
+        return when(val result = readerRepository.getAllArticlesByCreators(creatorIds, limit, offset)) {
             is DbResult.Failure -> throw InternalServerException()
             is DbResult.Success -> {
                 result.value.map {

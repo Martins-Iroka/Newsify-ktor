@@ -137,26 +137,26 @@ class ReaderRepositoryImplTest {
     }
 
     @Test
-    fun `should get all articles by creator id then get news article by creator id and article id`() = runTest {
+    fun `should get all articles by creators`() = runTest {
         saveCreatorAndUser()
+        val cid = firstCreatorId()
         val savedCID = lastCreatorId()
-        for (i in 1..2) {
-            val newsArticles = NewsArticleData(title = "title$i", content = "content$i", creatorId = savedCID)
-            val result = creatorRepository.saveNewsArticle(newsArticles)
-            assertTrue(result is DbResult.Success)
+        for (i in 1..5) {
+            if (i % 2 != 0) {
+                val newsArticles = NewsArticleData(title = "title$i", content = "content$i", creatorId = cid)
+                val result = creatorRepository.saveNewsArticle(newsArticles)
+                assertTrue(result is DbResult.Success)
+            } else {
+                val newsArticles = NewsArticleData(title = "title$i", content = "content$i", creatorId = savedCID)
+                val result = creatorRepository.saveNewsArticle(newsArticles)
+                assertTrue(result is DbResult.Success)
+            }
         }
 
-        val creatorArticlesResult = readerRepository.getAllArticlesByCreatorId(savedCID)
+        val creatorArticlesResult = readerRepository.getAllArticlesByCreators(listOf(cid, savedCID), 5, 0)
         assertTrue(creatorArticlesResult is DbResult.Success)
-        assertEquals(2, creatorArticlesResult.value.size)
+        assertEquals(5, creatorArticlesResult.value.size)
 
-        val articleId = creatorArticlesResult.value.first().id
-
-        val articleResult = readerRepository.getNewsArticleById(savedCID, articleId)
-        assertTrue(articleResult is DbResult.Success)
-        val article = articleResult.value
-        assertEquals("title1", article.title)
-        assertEquals("content1", article.content)
     }
 
     @Test

@@ -14,6 +14,7 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.CompositeID
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.select
 import org.koin.core.annotation.Single
@@ -60,8 +61,10 @@ class ReaderRepositoryImpl : ReaderRepository {
     ): DbResult<Unit> {
         return withTransaction {
             val deletedRow = FollowersTable.deleteWhere {
-                (FollowersTable.creatorID eq EntityID(creatorId, UsersTable)) and (FollowersTable.readerID eq EntityID(readerId,
-                    UsersTable))
+                (FollowersTable.creatorID eq EntityID(creatorId, UsersTable)) and (FollowersTable.readerID eq EntityID(
+                    readerId,
+                    UsersTable
+                ))
             }
             if (deletedRow == 0) {
                 DbResult.Failure(DbError.NotFound())
@@ -70,21 +73,30 @@ class ReaderRepositoryImpl : ReaderRepository {
         }
     }
 
-    override suspend fun getAllArticlesByCreatorId(creatorId: Long): DbResult<List<NewsArticleData>> {
+    override suspend fun getAllArticlesByCreators(
+        creatorIds: List<Long>,
+        limit: Int,
+        offset: Long
+    ): DbResult<List<NewsArticleData>> {
         return withTransaction {
+            if (creatorIds.isEmpty()) return@withTransaction DbResult.Success(emptyList())
+
             val articles = NewsArticlesTable
-                .select(NewsArticlesTable.id,
+                .select(
+                    NewsArticlesTable.id,
                     NewsArticlesTable.title,
-                    NewsArticlesTable.createdAt)
+                    NewsArticlesTable.createdAt,
+                    NewsArticlesTable.creatorId
+                )
                 .where {
-                    NewsArticlesTable.creatorId eq creatorId
-                }.orderBy(NewsArticlesTable.createdAt, order = SortOrder.DESC).map {
+                    NewsArticlesTable.creatorId inList creatorIds
+                }.limit(limit).offset(offset).orderBy(NewsArticlesTable.createdAt, order = SortOrder.DESC).map {
                     val title = it[NewsArticlesTable.title]
                     val createdAt = it[NewsArticlesTable.createdAt]
                     val id = it[NewsArticlesTable.id].value
-                    NewsArticleData(id = id, title = title, createdAt = createdAt)
+                    val creatorId = it[NewsArticlesTable.creatorId]
+                    NewsArticleData(id = id, title = title, createdAt = createdAt, creatorId = creatorId)
                 }
-
             DbResult.Success(articles)
         }
     }
@@ -107,11 +119,13 @@ class ReaderRepositoryImpl : ReaderRepository {
             val content = article[NewsArticlesTable.content]
             val createdAt = article[NewsArticlesTable.createdAt]
 
-            DbResult.Success(NewsArticleData(
-                title = title,
-                content = content,
-                createdAt = createdAt
-            ))
+            DbResult.Success(
+                NewsArticleData(
+                    title = title,
+                    content = content,
+                    createdAt = createdAt
+                )
+            )
         }
     }
 

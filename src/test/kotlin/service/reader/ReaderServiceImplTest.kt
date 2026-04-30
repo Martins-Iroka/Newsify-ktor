@@ -141,6 +141,7 @@ class ReaderServiceImplTest {
         }
     }
 
+    val ids = listOf(1L)
     @Test
     fun `get all articles by creator returns valid list`() = runTest {
         val articles = listOf(
@@ -149,10 +150,10 @@ class ReaderServiceImplTest {
             NewsArticleData()
         )
         coEvery {
-            repository.getAllArticlesByCreatorId(any())
+            repository.getAllArticlesByCreators(any(), any(), any())
         } returns DbResult.Success(articles)
 
-        val result = service.getAllArticlesByCreatorId(1)
+        val result = service.getAllArticlesByCreators(ids, 5, 0)
         assertTrue(result.isNotEmpty())
         assertEquals(3, result.size)
     }
@@ -160,20 +161,20 @@ class ReaderServiceImplTest {
     @Test
     fun `get all articles by creator returns empty list`() = runTest {
         coEvery {
-            repository.getAllArticlesByCreatorId(any())
+            repository.getAllArticlesByCreators(any(), any(), any())
         } returns DbResult.Success(emptyList())
 
-        val result = service.getAllArticlesByCreatorId(1)
+        val result = service.getAllArticlesByCreators(ids, 5, 0)
         assertTrue(result.isEmpty())
     }
 
     @Test
     fun `get all articles by creator throws internal server exception`() = runTest {
         coEvery {
-            repository.getAllArticlesByCreatorId(any())
+            repository.getAllArticlesByCreators(any(), any(), any())
         } returns DbResult.Failure(DbError.UnknownError())
 
-        assertFailsWith<InternalServerException>{ service.getAllArticlesByCreatorId(1) }
+        assertFailsWith<InternalServerException>{ service.getAllArticlesByCreators(ids, 5, 0) }
     }
 
     @Test

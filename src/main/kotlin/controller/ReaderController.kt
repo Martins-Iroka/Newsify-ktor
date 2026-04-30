@@ -82,12 +82,18 @@ fun Route.readerRoutes() {
              *      - 200 [List<NewsArticleResponse>] list of news article by a creator
              *      - 500 [com.martdev.dto.ErrorResponse] internal server error
              */
-            get("/get-articles-by-creatorId/{creatorId}") {
-                verifyReaderAndCreatorId { _, creatorId ->
-                    val result = service.getAllArticlesByCreatorId(creatorId)
-                    val response = DataResponse(result)
-                    call.respond(HttpStatusCode.OK, response)
+            get("/get-articles") {
+                verifyReaderRoleAndGetId()
+                val creatorIds = call.request.queryParameters.getAll("creatorId")?.mapNotNull { it.toLongOrNull() } ?: emptyList()
+                val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
+                val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
+                if (creatorIds.isEmpty()) {
+                    call.respond(HttpStatusCode.BadRequest, ErrorResponse("At least one creatorId is required"))
+                    return@get
                 }
+                val result = service.getAllArticlesByCreators(creatorIds, limit, offset)
+                val response = DataResponse(result)
+                call.respond(HttpStatusCode.OK, response)
             }
 
             /**

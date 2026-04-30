@@ -126,9 +126,9 @@ class ReaderRoutesTest {
     }
 
     @Test
-    fun `test get articles by creator id respond with HttpStatusCodeOk`() = testApplication {
+    fun `test get articles respond with HttpStatusCodeOk`() = testApplication {
         coEvery {
-            service.getAllArticlesByCreatorId(any())
+            service.getAllArticlesByCreators(any(), any(), any())
         } returns listOf(
             NewsArticleResponse()
         )
@@ -136,8 +136,24 @@ class ReaderRoutesTest {
             readerConfiguration()
         }
         val client = clientConfig(readerToken)
-        client.get("/reader/get-articles-by-creatorId/1").apply {
+        client.get("/reader/get-articles?creatorId=1").apply {
             assertEquals(HttpStatusCode.OK, status)
+        }
+    }
+
+    @Test
+    fun `test get articles respond with HttpStatusCodeBadRequest for no creator id query`() = testApplication {
+        coEvery {
+            service.getAllArticlesByCreators(any(), any(), any())
+        } returns listOf(
+            NewsArticleResponse()
+        )
+        application {
+            readerConfiguration()
+        }
+        val client = clientConfig(readerToken)
+        client.get("/reader/get-articles").apply {
+            assertEquals(HttpStatusCode.BadRequest, status)
         }
     }
 
