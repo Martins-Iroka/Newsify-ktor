@@ -82,7 +82,7 @@ fun Route.readerRoutes() {
              *      - 200 [List<NewsArticleResponse>] list of news article by a creator
              *      - 500 [com.martdev.dto.ErrorResponse] internal server error
              */
-            get("/get-articles") {
+            get("/get-articles-by-creators") {
                 verifyReaderRoleAndGetId()
                 val creatorIds = call.request.queryParameters.getAll("creatorId")?.mapNotNull { it.toLongOrNull() } ?: emptyList()
                 val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
