@@ -5,6 +5,7 @@ import com.martdev.controller.creatorRoutes
 import com.martdev.domain.Role
 import com.martdev.dto.DataResponse
 import com.martdev.dto.request.CreateNewsArticleRequest
+import com.martdev.dto.response.FollowerDataResponse
 import com.martdev.dto.response.NewsArticleResponse
 import com.martdev.plugins.configureSecurity
 import com.martdev.plugins.configureSerialization
@@ -28,6 +29,7 @@ import org.koin.ktor.plugin.Koin
 import util.clientConfig
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class CreatorRoutesTest {
 
@@ -206,6 +208,28 @@ class CreatorRoutesTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val dataResponse = response.body<DataResponse<NewsArticleResponse>>()
         assertEquals("Test Title", dataResponse.data.title)
+    }
+
+    @Test
+    fun testGetFollowers() = testApplication {
+        coEvery {
+            service.getFollowersByCreatorId(any())
+        } returns listOf(
+            FollowerDataResponse(username = "username")
+        )
+
+        application {
+            testConfiguration()
+        }
+
+        val client = clientConfig(creatorToken)
+
+        client.get("/v1/creator/getFollowers").apply {
+            assertEquals(HttpStatusCode.OK, status)
+            val responseBody = body<DataResponse<List<FollowerDataResponse>>>()
+            assertTrue(responseBody.data.isNotEmpty())
+            assertEquals(1, responseBody.data.size)
+        }
     }
 
     private fun Application.testConfiguration() {

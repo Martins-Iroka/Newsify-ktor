@@ -124,6 +124,21 @@ fun Route.creatorRoutes() {
                     call.respond(HttpStatusCode.OK, dataResponse)
                 }
             }
+
+            /**
+             * Tag: creator
+             *
+             * Get list of followers of a creator
+             *
+             * Responses:
+             *      - 500 [com.martdev.dto.ErrorResponse] internal server error.
+             */
+            get("/getFollowers") {
+                val creatorId = verifyCreatorAndGetId()
+                val followerDataResponses = service.getFollowersByCreatorId(creatorId)
+                val dataResponse = DataResponse(followerDataResponses)
+                call.respond(HttpStatusCode.OK, dataResponse)
+            }
         }
     }
 }

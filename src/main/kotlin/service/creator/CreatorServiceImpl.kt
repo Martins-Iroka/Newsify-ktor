@@ -5,6 +5,7 @@ import com.martdev.domain.exceptions.BadRequestException
 import com.martdev.domain.exceptions.InternalServerException
 import com.martdev.domain.exceptions.NotFoundException
 import com.martdev.dto.request.CreateNewsArticleRequest
+import com.martdev.dto.response.FollowerDataResponse
 import com.martdev.dto.response.NewsArticleResponse
 import com.martdev.repository.DbError
 import com.martdev.repository.DbResult
@@ -119,6 +120,19 @@ class CreatorServiceImpl(
                     updatedNewsArticle.title,
                     updatedNewsArticle.content
                 )
+            }
+        }
+    }
+
+    override suspend fun getFollowersByCreatorId(creatorId: Long): List<FollowerDataResponse> {
+        return when(val result = repository.getFollowersByCreatorId(creatorId)) {
+            is DbResult.Failure -> throw InternalServerException()
+            is DbResult.Success -> {
+                result.value.map {
+                    FollowerDataResponse(
+                        username = it.username
+                    )
+                }
             }
         }
     }
