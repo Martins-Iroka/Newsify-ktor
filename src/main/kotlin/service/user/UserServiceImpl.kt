@@ -47,9 +47,9 @@ class UserServiceImpl(
             }
             is DbResult.Success -> {
                 val userModel = result.value
-                //todo you have to modify this
                 val (emailId, error) = otpProvider.sendVerificationCode(userModel.email)
                 if (error.isNotEmpty()) {
+                    //todo you have to remove this and write a background job to clean up user who hasn't verified their account after 24 hours
                     repository.deleteUserAndVerificationToken(userModel.id)
                     throw InternalServerException("failed to send OTP")
                 }
@@ -65,7 +65,7 @@ class UserServiceImpl(
         val (isSuccess, errorMessage) = otpProvider.verifyCode(request.emailId, request.code)
         if (!isSuccess) {
             exposedLogger.error(errorMessage)
-            throw InternalServerException("invalid or expired OTP")
+            throw BadRequestException("invalid or expired OTP")
         }
         return when (val result = repository.activateUser(request.token)) {
             is DbResult.Failure -> when (result.error) {
@@ -108,8 +108,6 @@ class UserServiceImpl(
     }
 
     override suspend fun refreshToken(request: RefreshTokenRequest): RefreshTokenResponse {
-
-        if (request.refreshToken.isEmpty()) throw BadRequestException("invalid refresh token")
 
         val tokenInHex = generateHexValueFromToken(request.refreshToken)
 

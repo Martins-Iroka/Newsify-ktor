@@ -56,5 +56,11 @@ fun Application.configureRequestValidation() {
                 else -> ValidationResult.Valid
             }
         }
+
+        validate<RefreshTokenRequest> { request ->
+            if (request.refreshToken.isEmpty()) {
+                ValidationResult.Invalid("invalid refresh token")
+            } else ValidationResult.Valid
+        }
     }
 }
