@@ -116,7 +116,7 @@ fun Route.creatorRoutes() {
              *   - 404 [com.martdev.dto.ErrorResponse] not found.
              *   - 500 [com.martdev.dto.ErrorResponse] internal server error.
              */
-            patch("/updateNewsArticle/{articleId}") {
+            put("/updateNewsArticle/{articleId}") {
                 verifyPaths { creatorId, articleId ->
                     val request = call.receive<CreateNewsArticleRequest>()
                     val response = service.updateNewsArticle(creatorId, articleId,request)

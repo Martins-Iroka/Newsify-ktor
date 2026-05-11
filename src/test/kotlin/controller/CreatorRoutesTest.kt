@@ -193,7 +193,7 @@ class CreatorRoutesTest {
     }
 
     @Test
-    fun testPatchCreatorUpdateNewsArticle() = testApplication {
+    fun testPutCreatorUpdateNewsArticle() = testApplication {
         coEvery { service.updateNewsArticle(any(), any(), any()) } returns newsArticleDto
 
         application {
@@ -201,7 +201,7 @@ class CreatorRoutesTest {
         }
         val client = clientConfig(creatorToken)
 
-        val response = client.patch("/v1/creator/updateNewsArticle/1") {
+        val response = client.put("/v1/creator/updateNewsArticle/1") {
             setBody(createNewsArticleRequest)
         }
 
